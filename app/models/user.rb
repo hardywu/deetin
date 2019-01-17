@@ -1,35 +1,27 @@
-# frozen_string_literal: true
-
-# User model
 class User < BarongRecord
   ROLES = %w[admin accountant compliance member].freeze
 
-  acts_as_eventable prefix: 'user', on: %i[create update]
-
   has_secure_password
 
-  has_one   :profile,    dependent: :destroy
-  has_many  :phones,     dependent: :destroy
-  has_many  :documents,  dependent: :destroy
-  has_many  :labels,     dependent: :destroy
-  has_many  :api_keys,   dependent: :destroy, class_name: 'APIKey'
-  has_many  :activities, dependent: :destroy
-
-  validates :email,       email: true, presence: true, uniqueness: true
-  validates :uid,         presence: true, uniqueness: true
-  validates :password,    presence: true, if: :should_validate?,
-                          required_symbols: true,
-                          password_strength: { use_dictionary: true,
-                                               min_entropy: 14 }
+  has_many  :phones, dependent: :destroy
+  has_many  :labels, dependent: :destroy
+  validates :email, email: true, presence: true, uniqueness: true
+  validates :uid, presence: true, uniqueness: true
+  validates :password, presence: true, if: :should_validate?,
+                       required_symbols: true,
+                       password_strength: { use_dictionary: true,
+                                            min_entropy: 14 }
 
   scope :active, -> { where(state: 'active') }
 
   before_validation :assign_uid
-  belongs_to :referrer, class_name: "User", optional: true, foreign_key: 'referral_id'
-  has_many :referees, class_name: "User", foreign_key: 'referral_id'
+  belongs_to :referrer, class_name: 'User', optional: true,
+                        foreign_key: 'referral_id', inverse_of: :referees
+  has_many :referees, class_name: 'User', foreign_key: 'referral_id',
+                      inverse_of: :referrer, dependent: :restrict_with_error
 
   def active?
-    self.state == 'active'
+    state == 'active'
   end
 
   def role
@@ -88,7 +80,7 @@ class User < BarongRecord
   private
 
   def assign_uid
-    return unless uid.blank?
+    return if uid.present?
 
     loop do
       self.uid = random_uid

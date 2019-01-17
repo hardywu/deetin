@@ -1,23 +1,44 @@
 class V1::ApplicationController < ActionController::API
-  include Concerns::Auth
+  include V1::Concerns::Auth
+  include V1::Concerns::Constants
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from AuthorizeFailed, with: :not_authorized
   rescue_from NoMethodError, with: :internal_error
   rescue_from Peatio::Auth::Error, with: :not_authenticated
+  rescue_from InvalidParamError, with: :invalid_param
 
   private
 
   def record_not_found(err)
-    render json: { errors: [{ msg: err.message }] }, status: :not_found
+    render json: serialize_error(err, NOT_FOUND), status: :not_found
   end
 
   def not_authorized(err)
-    render json: { errors: [{ msg: err.message }] }, status: :forbidden
+    render json: serialize_error(err, NOT_ALLOWED), status: :forbidden
   end
 
   def not_authenticated(err)
-    render json: { errors: [{ msg: err.message }] },
+    render json: serialize_error(err, LOGIN_FAILED),
            status: :unauthorized
+  end
+
+  def internal_error(err)
+    render json: serialize_error(err, INTERNAL_ERROR),
+           status: :internal_server_error
+  end
+
+  def invalid_param(err)
+    render json: serialize_error(err, PARAMS_INVALID),
+           status: :unprocessable_entity
+  end
+
+  def serialize_error(err, code)
+    {
+      errors: [
+        code: code,
+        detail: err.message
+      ]
+    }
   end
 
   def root
