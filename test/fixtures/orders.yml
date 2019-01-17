@@ -1,0 +1,28 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# This model initially had no columns defined. If you add columns to the
+# model remove the '{}' from the fixture names and add the columns immediately
+# below each fixture, per the syntax in the comments below
+# #
+one:
+  type: bid
+  base: btc
+  quote: usd
+  market_id: btcusd
+  price: 100
+  volume: 10
+  origin_volume: 10
+  state: active
+  member_id: 1
+
+two:
+  type: ask
+  base: btc
+  quote: usd
+  market_id: btcusd
+  price: 100
+  volume: 10
+  origin_volume: 10
+  state: active
+  member_id: 1
+

@@ -13,9 +13,10 @@ default: &default
   adapter: mysql2
   encoding: utf8
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password:
-  host: localhost
+  host: <%= ENV.fetch('DATABASE_HOST', '127.0.0.1') %>
+  port: <%= ENV.fetch('DATABASE_PORT', 3306) %>
+  username: <%= ENV.fetch('DATABASE_USER', 'root') %>
+  password: <%= ENV.fetch('DATABASE_PASS', '') %>
 
 development:
   <<: *default
@@ -52,3 +53,49 @@ production:
   database: deetin_production
   username: deetin
   password: <%= ENV['DEETIN_DATABASE_PASSWORD'] %>
+
+
+peatio_default: &peatio_default
+  adapter: mysql2
+  encoding: utf8
+  collation: utf8_general_ci
+  pool: 5
+  host: <%= ENV.fetch('PEATIO_DATABASE_HOST', '127.0.0.1') %>
+  port: 3306
+  username: <%= ENV.fetch('PEATIO_DATABASE_USER', 'root') %>
+  password: <%= ENV['PEATIO_DATABASE_PASS'] %>
+
+peatio_development:
+  <<: *peatio_default
+  database: peatio_development
+
+peatio_test:
+  <<: *peatio_default
+  database: peatio_test
+
+peatio_production:
+  <<: *peatio_default
+  url: <%= ENV['PEATIO_DATABASE_URL'] %>
+  pool: 10
+  database: <%= ENV.fetch('PEATIO_DATABASE_NAME', 'peatio_production') %>
+
+barong_default: &barong_default
+  adapter: mysql2
+  encoding: utf8
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch('BARONG_DATABASE_HOST', '127.0.0.1') %>
+  port: <%= ENV.fetch('BARONG_DATABASE_PORT', 3306) %>
+  username: <%= ENV.fetch('BARONG_DATABASE_USER', 'root') %>
+  password: <%= ENV.fetch('BARONG_DATABASE_PASS', '') %>
+
+barong_development:
+  <<: *barong_default
+  database: barong_development
+
+barong_test:
+  <<: *barong_default
+  database: barong_test
+
+barong_production:
+  <<: *barong_default
+  database: <%= ENV.fetch('BARONG_DATABASE_NAME', 'barong_production') %>
