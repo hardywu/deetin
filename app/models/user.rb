@@ -7,10 +7,7 @@ class User < BarongRecord
   has_many  :labels, dependent: :destroy
   validates :email, email: true, presence: true, uniqueness: true
   validates :uid, presence: true, uniqueness: true
-  validates :password, presence: true, if: :should_validate?,
-                       required_symbols: true,
-                       password_strength: { use_dictionary: true,
-                                            min_entropy: 14 }
+  validates :password, presence: true, length: { minimum: 6 }
 
   scope :active, -> { where(state: 'active') }
 

@@ -3,14 +3,14 @@ class V1::UsersController < V1::ApplicationController
   before_action :verify_phone, only: :create
 
   def create
-    user = User.new user_params
-    phone = user.phones.new number: params[:phone_number]
-    phone.code = code
+    @user = User.new user_params
+    phone = @user.phones.new number: params[:phone_number]
+    phone.code = @code
 
     if @user.save
-      user.after_confirmation
-      user.add_level_label(:phone)
-      render json: serialize(@user), status: :created, location: @user
+      @user.after_confirmation
+      @user.add_level_label(:phone)
+      render json: serialize(@user), status: :created
     else
       render json: @user.errors, status: :unprocessable_entity
     end
@@ -40,8 +40,8 @@ class V1::UsersController < V1::ApplicationController
   end
 
   def verify_phone
-    code = Rails.cache.fetch "verify/#{params[:phone_number]}/code"
-    return unless code != params[:vcode]
+    @code = Rails.cache.fetch "verify/#{params[:phone_number]}/code"
+    return unless @code != params[:vcode]
 
     raise InvalidParamError, 'Verification Code is invalid'
   end
