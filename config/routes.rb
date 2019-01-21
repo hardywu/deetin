@@ -10,5 +10,6 @@ Rails.application.routes.draw do
     resources :transfers, except: %i[update destroy]
     post 'users/create_by_phone', to: 'users#create'
     post 'users/phone_vcode', to: 'users#phone_vcode'
+    get 'peatio_orders', to: 'peatio_orders#index'
   end
 end

@@ -23,6 +23,7 @@ gem 'fast_jsonapi'
 gem 'peatio', '~> 0.4.4'
 gem 'phonelib'
 gem 'twilio-ruby'
+gem 'kaminari'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
