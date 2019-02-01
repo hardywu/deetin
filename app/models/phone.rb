@@ -1,4 +1,4 @@
-class Phone < BarongRecord
+class Phone < ApplicationRecord
   belongs_to :user
 
   validates :number, phone: true

@@ -10,7 +10,59 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_15_160613) do
+ActiveRecord::Schema.define(version: 2019_02_01_212131) do
+
+  create_table "active_storage_attachments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "documents", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.bigint "user_id", null: false, unsigned: true
+    t.string "upload"
+    t.string "doc_type"
+    t.string "doc_number"
+    t.date "doc_expire"
+    t.text "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "labels", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.bigint "user_id", null: false, unsigned: true
+    t.string "key", null: false
+    t.string "value", null: false
+    t.string "scope", default: "public", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "key", "scope"], name: "index_labels_on_user_id_and_key_and_scope"
+    t.index ["user_id"], name: "index_labels_on_user_id"
+  end
+
+  create_table "levels", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "value"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "markets", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "base_unit", limit: 10, null: false
@@ -48,6 +100,18 @@ ActiveRecord::Schema.define(version: 2019_01_15_160613) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "phones", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "user_id", null: false, unsigned: true
+    t.string "country", null: false
+    t.string "number", null: false
+    t.string "code", limit: 5
+    t.datetime "validated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["number"], name: "index_phones_on_number"
+    t.index ["user_id"], name: "index_phones_on_user_id"
+  end
+
   create_table "trades", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.decimal "price", precision: 32, scale: 16, null: false
     t.decimal "volume", precision: 32, scale: 16, null: false
@@ -73,4 +137,21 @@ ActiveRecord::Schema.define(version: 2019_01_15_160613) do
     t.index ["member_id"], name: "index_transfers_on_member_id"
   end
 
+  create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "uid", null: false
+    t.string "domain", default: "nanyazq.com", null: false
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "role", default: "member", null: false
+    t.integer "level", default: 0, null: false
+    t.string "state", default: "pending", null: false
+    t.boolean "otp", default: false
+    t.integer "referral_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["domain", "email"], name: "index_users_on_email", unique: true
+    t.index ["uid"], name: "index_users_on_uid", unique: true
+  end
+
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
 end

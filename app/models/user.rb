@@ -1,4 +1,4 @@
-class User < BarongRecord
+class User < ApplicationRecord
   ROLES = %w[admin accountant compliance member].freeze
 
   has_secure_password

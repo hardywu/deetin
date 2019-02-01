@@ -1,4 +1,4 @@
-class Label < BarongRecord
+class Label < ApplicationRecord
   belongs_to :user
 
   SCOPES =

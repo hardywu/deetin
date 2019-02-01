@@ -1,4 +1,4 @@
-class Level < BarongRecord
+class Level < ApplicationRecord
   belongs_to :user
 
   SCOPES =

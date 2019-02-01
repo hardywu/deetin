@@ -8,7 +8,7 @@ module V1::Concerns::Constants
   PARAMS_INVALID = '0201'.freeze
 
   class InvalidParamError < StandardError
-    def initialize(msg='invalid parameter')
+    def initialize(msg = 'invalid parameter')
       super(msg)
     end
   end
