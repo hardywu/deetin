@@ -12,6 +12,7 @@ class User < ApplicationRecord
   scope :active, -> { where(state: 'active') }
 
   before_validation :assign_uid
+  after_create :after_confirmation
   belongs_to :referrer, class_name: 'User', optional: true,
                         foreign_key: 'referral_id', inverse_of: :referees
   has_many :referees, class_name: 'User', foreign_key: 'referral_id',
@@ -30,9 +31,8 @@ class User < ApplicationRecord
   end
 
   def after_confirmation
-    add_level_label(:email)
-    self.state = 'active'
-    save
+     add_level_label(:phone)
+     add_level_label(:email)
   end
 
   # FIXME: Clean level micro code
@@ -61,6 +61,7 @@ class User < ApplicationRecord
     {
       uid: uid,
       email: email,
+      domain: domain,
       role: role,
       level: level,
       otp: otp,
@@ -71,7 +72,11 @@ class User < ApplicationRecord
   end
 
   def as_payload
-    as_json(only: %i[uid email referral_id role level state])
+    as_json(only: %i[uid email domain referral_id role level state])
+  end
+
+  def jwt
+    JWT.encode as_payload, 'secret', 'HS256'
   end
 
   private
@@ -86,6 +91,9 @@ class User < ApplicationRecord
   end
 
   def random_uid
-    "ID#{SecureRandom.hex(5).upcase}"
+    time = Time.current
+    tparts = [time.day, time.month, time.year].map { |x| x.to_s.rjust(2, '0') }
+    parts = tparts.join.chars.map { |x| x + rand(100).to_s.rjust(2, '0') }
+    rand(100).to_s.rjust(2, '0') + parts.join
   end
 end

@@ -46,7 +46,7 @@ class V1::MarketsController < V1::ApplicationController
   end
 
   def query_param
-    params.permit(:email, :domain, :username)
+    params.permit(:uid, :domain, :username)
   end
 
   def serialize(market)

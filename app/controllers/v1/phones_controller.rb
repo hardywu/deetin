@@ -1,4 +1,4 @@
-class PhonesController < ApplicationController
+class V1::PhonesController < V1::ApplicationController
   before_action :set_phone, only: [:show, :update, :destroy]
 
   # GET /phones
