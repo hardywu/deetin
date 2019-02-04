@@ -5,6 +5,7 @@ class User < ApplicationRecord
 
   has_many  :phones, dependent: :destroy
   has_many  :labels, dependent: :destroy
+  has_one :profile
   validates :email, email: true, presence: true, uniqueness: true
   validates :uid, presence: true, uniqueness: true
   validates :password, presence: true, length: { minimum: 6 }
@@ -57,26 +58,50 @@ class User < ApplicationRecord
           .update!(value: value)
   end
 
-  def as_json_for_event_api
-    {
-      uid: uid,
-      email: email,
-      domain: domain,
-      role: role,
-      level: level,
-      otp: otp,
-      state: state,
-      created_at: format_iso8601_time(created_at),
-      updated_at: format_iso8601_time(updated_at)
-    }
-  end
-
   def as_payload
-    as_json(only: %i[uid email domain referral_id role level state])
+    slice(%i[uid email domain referral_id role level state])
   end
 
   def jwt
     JWT.encode as_payload, 'secret', 'HS256'
+  end
+
+  class << self
+    def from_payload(p)
+      params = filter_payload(p)
+      validate_payload(params)
+      member = User.find_or_create_by(uid: p[:uid], email: p[:email]) do |m|
+        m.role = params[:role]
+        m.state = params[:state]
+        m.level = params[:level]
+      end
+      member.assign_attributes(params)
+      member.save if member.changed?
+      member
+    end
+
+    # Filter and validate payload params
+    def filter_payload(payload)
+      payload.slice(:email, :uid, :role, :state, :level)
+    end
+
+    def validate_payload(p)
+      fetch_email(p)
+      p.fetch(:uid).tap { |uid| raise(Peatio::Auth::Error, 'UID is blank.') if uid.blank? }
+      p.fetch(:role).tap { |role| raise(Peatio::Auth::Error, 'Role is blank.') if role.blank? }
+      p.fetch(:level).tap { |level| raise(Peatio::Auth::Error, 'Level is blank.') if level.blank? }
+      p.fetch(:state).tap do |state|
+        raise(Peatio::Auth::Error, 'State is blank.') if state.blank?
+        raise(Peatio::Auth::Error, 'State is not active.') unless state == 'active'
+      end
+    end
+
+    def fetch_email(payload)
+      payload[:email].to_s.tap do |email|
+        raise(Peatio::Auth::Error, 'E-Mail is blank.') if email.blank?
+        raise(Peatio::Auth::Error, 'E-Mail is invalid.') unless EmailValidator.valid?(email)
+      end
+    end
   end
 
   private

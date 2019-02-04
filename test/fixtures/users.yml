@@ -4,8 +4,20 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-one: {}
-# column: value
-#
-two: {}
-# column: value
+one:
+  email: admin@barong.io
+  password_digest: <%= BCrypt::Password.create('123456') %>
+  domain: nanyazq.com
+  role: admin
+  state: active
+  level: 3
+  uid: 21321433242
+
+member:
+  email: john@barong.io
+  password_digest: <%= BCrypt::Password.create('123456') %>
+  domain: nanyazq.com
+  role: member
+  state: active
+  level: 2
+  uid: 2132143324223

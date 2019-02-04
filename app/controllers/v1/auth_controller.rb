@@ -1,7 +1,7 @@
 class V1::AuthController < V1::ApplicationController
   before_action :set_phone, only: :phone_vcode
   before_action :verify_phone, only: :signup
-  before_action :set_user, only: :login
+  before_action :set_user, only: :signin
 
   def signup
     @user = User.new user_params
@@ -9,6 +9,7 @@ class V1::AuthController < V1::ApplicationController
     phone.code = @code
 
     if @user.save
+      response.headers['JWT'] = @user.jwt
       render json: serialize(@user), status: :created
     else
       render json: @user.errors, status: :unprocessable_entity
@@ -28,6 +29,7 @@ class V1::AuthController < V1::ApplicationController
 
   def signin
     if @user.authenticate params[:password]
+      response.headers['JWT'] = @user.jwt
       render json: serialize(@user), status: :ok
     else
       raise Peatio::Auth::Error, '登录失败'
@@ -37,11 +39,11 @@ class V1::AuthController < V1::ApplicationController
   private
 
   def set_user
-    @user = User.find_by! domain: params[:domain], uid: params[:uid]
+    @user = User.find_by! uid: params[:uid]
   end
 
   def serialize(user)
-    UserSerializer.new(user, { params: { auth: true } }).serialized_json
+    UserSerializer.new(user).serialized_json
   end
 
   def set_phone

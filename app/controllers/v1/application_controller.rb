@@ -49,6 +49,10 @@ class V1::ApplicationController < ActionController::API
     raise Peatio::Auth::Error unless current_user
   end
 
+  def set_admin_auth
+    raise Peatio::Auth::Error unless current_user&.role == 'admin'
+  end
+
   def current_user
     @current_user ||= authenticate(request.headers['Authorization'])
   end

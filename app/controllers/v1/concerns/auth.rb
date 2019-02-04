@@ -16,16 +16,27 @@ module V1::Concerns::Auth
   # @param [Hash] options
   # @return [String, Member, NilClass]
   def authenticate(token)
-    payload, _header = jwt_authenticator.authenticate!(token)
+    if header(token)['alg'] == 'HS256'
+      payload, _header = JWT.decode token.split(' ')[1], 'secret'
+      payload = payload.symbolize_keys
+    else
+      payload, _header = jwt_authenticator.authenticate!(token)
+    end
     fetch_member(payload)
   rescue StandardError => e
     raise Peatio::Auth::Error, e.inspect
   end
 
+  def header(token)
+    str = token.split(' ')[1].split('.')[0]
+    str += '=' * (4 - str.length.modulo(4))
+    JSON.parse(::Base64.decode64(str.tr('-_', '+/')))
+  end
+
   private
 
   def fetch_member(payload)
-    Member.from_payload(payload)
+    User.from_payload(payload)
     # Handle race conditions when creating member & authentication records.
     # We do not handle race condition for update operations.
     # http://api.rubyonrails.org/classes/ActiveRecord/Relation.html#method-i-find_or_create_by

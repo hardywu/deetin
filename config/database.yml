@@ -78,24 +78,3 @@ peatio_production:
   url: <%= ENV['PEATIO_DATABASE_URL'] %>
   pool: 10
   database: <%= ENV.fetch('PEATIO_DATABASE_NAME', 'peatio_production') %>
-
-barong_default: &barong_default
-  adapter: mysql2
-  encoding: utf8
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: <%= ENV.fetch('BARONG_DATABASE_HOST', '127.0.0.1') %>
-  port: <%= ENV.fetch('BARONG_DATABASE_PORT', 3306) %>
-  username: <%= ENV.fetch('BARONG_DATABASE_USER', 'root') %>
-  password: <%= ENV.fetch('BARONG_DATABASE_PASS', '') %>
-
-barong_development:
-  <<: *barong_default
-  database: barong_development
-
-barong_test:
-  <<: *barong_default
-  database: barong_test
-
-barong_production:
-  <<: *barong_default
-  database: <%= ENV.fetch('BARONG_DATABASE_NAME', 'barong_production') %>
