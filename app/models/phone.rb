@@ -43,7 +43,7 @@ class Phone < ApplicationRecord
     end
 
     def send_sms(number:, content:)
-      SMSClient.send_sms(
+      @sms_client.send_sms(
         to: '+' + number,
         body: content
       )
