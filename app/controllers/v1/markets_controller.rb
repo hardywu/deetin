@@ -1,5 +1,5 @@
 class V1::MarketsController < V1::ApplicationController
-  before_action :authorize, except: %i[index show]
+  before_action :set_admin_auth, except: %i[index show]
   before_action :set_market, except: %i[index create]
 
   def index
@@ -41,10 +41,6 @@ class V1::MarketsController < V1::ApplicationController
     @market = Market.find params[:id]
   end
 
-  def authorize
-    raise AuthorizeFailed unless current_user.admin?
-  end
-
   def query_param
     params.permit(:uid, :domain, :username)
   end
@@ -53,14 +49,13 @@ class V1::MarketsController < V1::ApplicationController
     MarketSerializer.new(market).serialized_json
   end
 
-  # Only allow a trusted parameter "white list" through.
   def market_params
-    params.permit(
-      :base_unit,
-      :quote_unit,
-      :enabled,
-      :base_precision,
-      :quote_precision
-    )
+    params.fetch(:data, {}).fetch(:attributes, {})
+          .permit :base_unit,
+                  :quote_unit,
+                  :enabled,
+                  :base_precision,
+                  :quote_precision,
+                  :name
   end
 end

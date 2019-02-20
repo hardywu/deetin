@@ -13,3 +13,12 @@ User.create \
   role: 'member',
   state: 'active',
   level: 2
+
+# Market.destroy_all
+# FuturesMarket.destroy_all
+
+FuturesMarket.create \
+  code: 'CMGCA0',
+  base_unit: 'GC',
+  quote_unit: 'USD',
+  name: ''

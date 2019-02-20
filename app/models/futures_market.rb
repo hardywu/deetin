@@ -1,0 +1,2 @@
+class FuturesMarket < Market
+end

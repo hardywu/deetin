@@ -1,0 +1,63 @@
+class V1::PaymentsController < V1::ApplicationController
+  before_action :set_payment, only: %i[show update destroy]
+
+  # GET /payments
+  def index
+    @payments = Payment.all
+
+    render json: serialize(@payments)
+  end
+
+  # GET /payments/1
+  def show
+    render json: serialize(@payment)
+  end
+
+  # POST /payments
+  def create
+    @payment = Payment.new(payment_params)
+    @payment.user = current_user
+
+    if @payment.save
+      render json: serialize(@payment), status: :created
+    else
+      render json: @payment.errors, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH/PUT /payments/1
+  def update
+    if @payment.update(payment_params)
+      render json: serialize(@payment)
+    else
+      render json: @payment.errors, status: :unprocessable_entity
+    end
+  end
+
+  # DELETE /payments/1
+  def destroy
+    @payment.destroy
+  end
+
+  private
+
+  def serialize(payment)
+    PaymentSerializer.new(payment).serialized_json
+  end
+
+  # Use callbacks to share common setup or constraints between actions.
+  def set_payment
+    @payment = Payment.find(params[:id])
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def payment_params
+    params.fetch(:data, {}).fetch(:attributes, {})
+          .permit(:type, :name, :no, :desc)
+  end
+end
+
+#       t.string :type
+#       t.string :name
+#       t.string :no
+#       t.text :desc

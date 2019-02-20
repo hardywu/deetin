@@ -12,6 +12,8 @@ Rails.application.routes.draw do
     resources :phones
     resources :profiles
     resources :users
+    resources :payments
+    resources :positions, only: %i[index]
     post 'auth/signup', to: 'auth#signup'
     post 'auth/signin', to: 'auth#signin'
     post 'auth/phone_vcode', to: 'auth#phone_vcode'

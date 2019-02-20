@@ -5,7 +5,7 @@ class UserTest < ActiveSupport::TestCase
     @user = users(:member)
   end
 
-  test "user jwt format" do
+  test 'user jwt format' do
     assert_equal @user.jwt.split('.').length, 3
   end
 end

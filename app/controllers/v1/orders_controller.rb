@@ -1,20 +1,27 @@
 class V1::OrdersController < V1::ApplicationController
-  before_action :set_authenticate, Only: %i[create update]
+  before_action :set_authenticate, only: %i[create update]
   before_action :set_order, except: %i[index create]
 
   def index
-    render json: Order.all
+    orders = Order.where(query_params)
+                  .order(params[:order_by])
+                  .page(params[:page])
+                  .per(params[:limit])
+
+    render json: serialize(orders, { include: %i[user] })
   end
 
   def show
-    render json: @order
+    render json: serialize(@order, { include: %i[user user.payments] })
   end
 
   def create
-    @order = Order.new order_params
+    logger.info order_params
+    @order = klass.new order_params.merge(market_id: market_id)
+    @order.user = current_user
 
     if @order.save
-      render json: serialize(@order), status: :created, location: @order
+      render json: serialize(@order), status: :created
     else
       render json: @order.errors, status: :unprocessable_entity
     end
@@ -35,12 +42,38 @@ class V1::OrdersController < V1::ApplicationController
     @order = Order.find params[:id]
   end
 
-  def serialize(order)
-    OrderSerializer.new(order).serialized_json
+  def serialize(*args)
+    OrderSerializer.new(*args).serialized_json
+  end
+
+  def klass
+    case params.fetch(:data, {}).fetch(:type)
+    when 'bid'
+      Bid
+    when 'ask'
+      Ask
+    else
+      raise ActiveRecord::RecordNotFound, 'No Order Type found'
+    end
   end
 
   # Only allow a trusted parameter "white list" through.
   def order_params
-    params.permit(:price, :volume, :enabled)
+    params.fetch(:data, {}).fetch(:attributes, {})
+          .permit(:price, :volume, :ord_type)
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def query_params
+    defaults = {
+      state: 'wait',
+      user_id: @current_user&.id
+    }.compact
+    params.permit(:state, :user_id, :market_id).reverse_merge(defaults)
+  end
+
+  def market_id
+    params.fetch(:data, {}).fetch(:relationships, {})
+          .fetch(:market, {}).fetch(:data, {}).fetch(:id)
   end
 end

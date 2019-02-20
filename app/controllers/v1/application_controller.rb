@@ -6,6 +6,8 @@ class V1::ApplicationController < ActionController::API
   rescue_from NoMethodError, with: :internal_error
   rescue_from Peatio::Auth::Error, with: :not_authenticated
   rescue_from InvalidParamError, with: :invalid_param
+  rescue_from ActionController::ParameterMissing, with: :invalid_param
+  rescue_from ActiveRecord::NotNullViolation, with: :invalid_param
 
   private
 

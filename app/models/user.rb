@@ -5,15 +5,19 @@ class User < ApplicationRecord
 
   has_many  :phones, dependent: :destroy
   has_many  :labels, dependent: :destroy
-  has_one :profile
+  has_one :profile, dependent: :destroy
+  has_many :orders
+  has_many :positions
+  has_many :payments
   validates :email, email: true, presence: true, uniqueness: true
   validates :uid, presence: true, uniqueness: true
-  validates :password, presence: true, length: { minimum: 6 }
+  validates :password, presence: true, length: { minimum: 6 }, on: :create
 
   scope :active, -> { where(state: 'active') }
 
   before_validation :assign_uid
   after_create :after_confirmation
+  after_create :touch_positions
   belongs_to :referrer, class_name: 'User', optional: true,
                         foreign_key: 'referral_id', inverse_of: :referees
   has_many :referees, class_name: 'User', foreign_key: 'referral_id',
@@ -32,8 +36,15 @@ class User < ApplicationRecord
   end
 
   def after_confirmation
-     add_level_label(:phone)
-     add_level_label(:email)
+    add_level_label(:phone)
+    add_level_label(:email)
+  end
+
+  def touch_positions
+    FuturesMarket.find_each do |market|
+      next if positions.where(market: market).exists?
+      positions.create!(market: market)
+    end
   end
 
   # FIXME: Clean level micro code
@@ -59,7 +70,7 @@ class User < ApplicationRecord
   end
 
   def as_payload
-    slice(%i[uid email domain referral_id role level state])
+    slice(%i[id uid email domain referral_id role level state])
   end
 
   def jwt
@@ -116,9 +127,6 @@ class User < ApplicationRecord
   end
 
   def random_uid
-    time = Time.current
-    tparts = [time.day, time.month, time.year].map { |x| x.to_s.rjust(2, '0') }
-    parts = tparts.join.chars.map { |x| x + rand(100).to_s.rjust(2, '0') }
-    rand(100).to_s.rjust(2, '0') + parts.join
+    Time.current.strftime '%3N%H%j%y%M'
   end
 end

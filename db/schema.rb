@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_04_041553) do
+ActiveRecord::Schema.define(version: 2019_02_05_100319) do
 
   create_table "active_storage_attachments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "name", null: false
@@ -72,6 +72,10 @@ ActiveRecord::Schema.define(version: 2019_02_04_041553) do
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "type"
+    t.string "code"
+    t.string "name"
+    t.index ["code"], name: "index_markets_on_code", unique: true
   end
 
   create_table "orders", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -83,12 +87,13 @@ ActiveRecord::Schema.define(version: 2019_02_04_041553) do
     t.decimal "volume", precision: 32, scale: 16, null: false
     t.decimal "origin_volume", precision: 32, scale: 16, null: false
     t.decimal "fee", precision: 32, scale: 16, default: "0.0", null: false
-    t.integer "state", null: false
-    t.integer "member_id", null: false
+    t.integer "state", default: 0, null: false
+    t.integer "user_id", null: false
     t.decimal "funds_received", precision: 32, scale: 16, default: "0.0"
     t.integer "trades_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ord_type", default: "limit", null: false
   end
 
   create_table "otc_accounts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -98,6 +103,18 @@ ActiveRecord::Schema.define(version: 2019_02_04_041553) do
     t.decimal "locked", precision: 32, scale: 16, default: "0.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "payments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "type"
+    t.string "name"
+    t.string "no"
+    t.text "desc"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "type"], name: "index_payments_on_user_id_and_type", unique: true
+    t.index ["user_id"], name: "index_payments_on_user_id"
   end
 
   create_table "phones", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -110,6 +127,16 @@ ActiveRecord::Schema.define(version: 2019_02_04_041553) do
     t.datetime "updated_at", null: false
     t.index ["number"], name: "index_phones_on_number"
     t.index ["user_id"], name: "index_phones_on_user_id"
+  end
+
+  create_table "positions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "market_id", null: false
+    t.integer "volume", default: 0, null: false
+    t.decimal "margin", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "credit", precision: 32, scale: 16, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "profiles", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -164,6 +191,7 @@ ActiveRecord::Schema.define(version: 2019_02_04_041553) do
     t.integer "referral_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "username"
     t.index ["domain", "email"], name: "index_users_on_email", unique: true
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end

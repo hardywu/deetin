@@ -1,11 +1,16 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 # This model initially had no columns defined. If you add columns to the
-# model remove the {} from the fixture names and add the columns immediately
+# model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-one:
-  code: BTCUSD
-  base_unit: btc
-  quote_unit: usd
-  name: BTC/USD
+futures_one:
+  type: FuturesMarket
+  code: CMGCA0
+  base_unit: GC
+  quote_unit: USD
+  name: 美国黄金现货1
+
+#
+# two: {}
+# column: value

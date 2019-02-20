@@ -5,11 +5,11 @@ class V1::AuthController < V1::ApplicationController
 
   def signup
     @user = User.new user_params
-    phone = @user.phones.new number: params[:phone_number]
+    phone = @user.phones.new number: params[:phone]
     phone.code = @code
 
     if @user.save
-      response.headers['JWT'] = @user.jwt
+      response.headers['Authorization'] = "Bearer #{@user.jwt}"
       render json: serialize(@user), status: :created
     else
       render json: @user.errors, status: :unprocessable_entity
@@ -17,8 +17,8 @@ class V1::AuthController < V1::ApplicationController
   end
 
   def phone_vcode
-    phone = Phone.new(number: @phone_number)
-    captcha_key = "verify/#{@phone_number}/code"
+    phone = Phone.new(number: @phone)
+    captcha_key = "verify/#{@phone}/code"
     phone.code = Rails.cache.fetch(captcha_key, expires_in: 34.minutes) do
       phone.code
     end
@@ -28,18 +28,17 @@ class V1::AuthController < V1::ApplicationController
   end
 
   def signin
-    if @user.authenticate params[:password]
-      response.headers['JWT'] = @user.jwt
-      render json: serialize(@user), status: :ok
-    else
-      raise Peatio::Auth::Error, '登录失败'
-    end
+    raise Peatio::Auth::Error, '登录失败' unless
+      @user.authenticate params[:password]
+
+    response.headers['Authorization'] = "Bearer #{@user.jwt}"
+    render json: serialize(@user), status: :ok
   end
 
   private
 
   def set_user
-    @user = User.find_by! uid: params[:uid]
+    @user = User.find_by uid: params[:uid]
   end
 
   def serialize(user)
@@ -47,14 +46,14 @@ class V1::AuthController < V1::ApplicationController
   end
 
   def set_phone
-    raise InvalidParamError unless Phone.valid?(params[:phone_number])
+    raise InvalidParamError unless Phone.valid?(params[:phone])
 
-    @phone_number = Phone.international(params[:phone_number])
+    @phone = Phone.international(params[:phone])
   end
 
   def verify_phone
-    @code = Rails.cache.fetch "verify/#{params[:phone_number]}/code"
-    return unless @code != params[:vcode]
+    @code = Rails.cache.fetch "verify/#{params[:phone]}/code"
+    return unless ENV['PHONE_VCODE_REQUIRED'] && @code != params[:vcode]
 
     raise InvalidParamError, 'Verification Code is invalid'
   end
@@ -71,13 +70,11 @@ class V1::AuthController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    build_params = {
+    {
       state: 'active',
       email: "#{set_phone}@nu0.one",
-      password: params[:password]
-    }
-    build_params[:referral_id] = parse_refid! unless params[:refid].nil?
-    logger.info build_params
-    build_params
+      password: params[:password],
+      referral_id: (parse_refid! unless params[:refid].nil?)
+    }.compact
   end
 end
