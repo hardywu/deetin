@@ -1,7 +1,7 @@
 version: '3.6'
 
 services:
-  web:
+  deetin:
     build:
       context: ./
       dockerfile: Dockerfile.dev
@@ -22,24 +22,6 @@ services:
       REDIS_URL: redis://redis:6379/0
     command: bash -c "bundle install && bundle exec rails db:create db:migrate && puma --config config/puma.rb"
 
-
-  redis:
-    image: redis:4.0.10
-    restart: always
-    ports:
-      - 6379:6379
-    volumes:
-      - redis_data:/data
-
-  db:
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: changeme
-
-volumes:
-  db_data:
-  redis_data:
+networks:
+  default:
+    name: microkube_default

@@ -1,4 +1,3 @@
-bin
 .git
 log/*.log
 tmp/cache

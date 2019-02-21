@@ -51,8 +51,8 @@ test:
 production:
   <<: *default
   database: deetin_production
-  username: deetin
-  password: <%= ENV['DEETIN_DATABASE_PASSWORD'] %>
+  username: <%= ENV['DATABASE_USER'] %>
+  password: <%= ENV['DATABASE_PASS'] %>
 
 
 peatio_default: &peatio_default
@@ -78,3 +78,28 @@ peatio_production:
   url: <%= ENV['PEATIO_DATABASE_URL'] %>
   pool: 10
   database: <%= ENV.fetch('PEATIO_DATABASE_NAME', 'peatio_production') %>
+
+
+barong_default: &barong_default
+  adapter: mysql2
+  encoding: utf8
+  collation: utf8_general_ci
+  pool: 5
+  host: <%= ENV.fetch('BARONG_DATABASE_HOST', '127.0.0.1') %>
+  port: 3306
+  username: <%= ENV.fetch('BARONG_DATABASE_USER', 'root') %>
+  password: <%= ENV['BARONG_DATABASE_PASS'] %>
+
+barong_development:
+  <<: *barong_default
+  database: barong_development
+
+barong_test:
+  <<: *barong_default
+  database: barong_test
+
+barong_production:
+  <<: *barong_default
+  url: <%= ENV['BARONG_DATABASE_URL'] %>
+  pool: 10
+  database: <%= ENV.fetch('BARONG_DATABASE_NAME', 'barong_production') %>
