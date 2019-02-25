@@ -6,9 +6,12 @@ class User < ApplicationRecord
   has_many  :phones, dependent: :destroy
   has_many  :labels, dependent: :destroy
   has_one :profile, dependent: :destroy
-  has_many :orders
-  has_many :positions
-  has_many :payments
+  has_many :orders, dependent: :restrict_with_error
+  has_many :positions, dependent: :restrict_with_error
+  has_many :payments, dependent: :restrict_with_error
+  has_many :accounts, foreign_key: :member_id,
+                      inverse_of: :member,
+                      dependent: :restrict_with_error
   validates :email, email: true, presence: true, uniqueness: true
   validates :uid, presence: true, uniqueness: true
   validates :password, presence: true, length: { minimum: 6 }, on: :create
@@ -18,6 +21,7 @@ class User < ApplicationRecord
   before_validation :assign_uid
   after_create :after_confirmation
   after_create :touch_positions
+  after_create :touch_accounts
   belongs_to :referrer, class_name: 'User', optional: true,
                         foreign_key: 'referral_id', inverse_of: :referees
   has_many :referees, class_name: 'User', foreign_key: 'referral_id',
@@ -40,9 +44,18 @@ class User < ApplicationRecord
     add_level_label(:email)
   end
 
+  def touch_accounts
+    Currency.find_each do |currency|
+      next if accounts.where(currency: currency).exists?
+
+      accounts.create!(currency: currency)
+    end
+  end
+
   def touch_positions
     FuturesMarket.find_each do |market|
       next if positions.where(market: market).exists?
+
       positions.create!(market: market)
     end
   end

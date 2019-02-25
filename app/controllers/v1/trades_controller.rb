@@ -31,6 +31,7 @@ class V1::TradesController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def trade_params
-    params.permit(:price, :volume, :enabled)
+    params.fetch(:data, {}).fetch(:attributes, {})
+          .permit(:price, :volume, :enabled, :state)
   end
 end

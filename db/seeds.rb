@@ -10,15 +10,38 @@ User.create \
   email: 'john@barong.io',
   password: '123456',
   domain: 'nanyazq.com',
+  role: 'master',
+  state: 'active',
+  level: 2
+
+User.create \
+  email: 'test@nu0.one',
+  password: '123456',
+  domain: 'nanyazq.com',
   role: 'member',
   state: 'active',
   level: 2
 
-# Market.destroy_all
-# FuturesMarket.destroy_all
+Coin.create id: 'GX',
+            name: 'Gaming Xerion',
+            symbol: 'G',
+            deposit_fee: 0,
+            enabled: true
 
-FuturesMarket.create \
-  code: 'CMGCA0',
+Coin.create id: 'GC',
+            name: 'Gaming Center',
+            symbol: 'C',
+            deposit_fee: 0,
+            enabled: true
+
+Market.create \
+  code: 'GC/CNY',
   base_unit: 'GC',
-  quote_unit: 'USD',
-  name: ''
+  quote_unit: 'CNY',
+  name: 'GC CNY market'
+
+Market.create \
+  code: 'GX/CNY',
+  base_unit: 'GX',
+  quote_unit: 'CNY',
+  name: 'GX CNY market'

@@ -16,7 +16,6 @@ class V1::OrdersController < V1::ApplicationController
   end
 
   def create
-    logger.info order_params
     @order = klass.new order_params.merge(market_id: market_id)
     @order.user = current_user
 
@@ -60,14 +59,13 @@ class V1::OrdersController < V1::ApplicationController
   # Only allow a trusted parameter "white list" through.
   def order_params
     params.fetch(:data, {}).fetch(:attributes, {})
-          .permit(:price, :volume, :ord_type)
+          .permit(:price, :volume, :ord_type, :state)
   end
 
   # Only allow a trusted parameter "white list" through.
   def query_params
     defaults = {
-      state: 'wait',
-      user_id: @current_user&.id
+      state: 'waiting'
     }.compact
     params.permit(:state, :user_id, :market_id).reverse_merge(defaults)
   end

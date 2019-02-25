@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class V1::OtcAccountsControllerTest < ActionDispatch::IntegrationTest
+class AccountTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

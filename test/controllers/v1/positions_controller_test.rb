@@ -4,6 +4,7 @@ class V1::PositionsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:member)
     @market = futures_markets(:futures_one)
+    @market._run_create_callbacks
     @token_head = { 'Authorization' => "Bearer #{@user.jwt}" }
   end
 

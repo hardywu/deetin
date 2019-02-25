@@ -1,0 +1,2 @@
+class Coin < Currency
+end

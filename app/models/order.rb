@@ -1,7 +1,7 @@
 class Order < ApplicationRecord
   belongs_to :market
   belongs_to :user
-  enum state: %i[waiting done cancelled]
+  enum state: %i[waiting done cancelled passive]
 
   before_validation :set_attrs
 

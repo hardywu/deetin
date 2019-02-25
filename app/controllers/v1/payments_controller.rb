@@ -3,7 +3,10 @@ class V1::PaymentsController < V1::ApplicationController
 
   # GET /payments
   def index
-    @payments = Payment.all
+    @payments = Payment.where(query_params)
+                       .order(params[:order_by])
+                       .page(params[:page])
+                       .per(params[:limit])
 
     render json: serialize(@payments)
   end
@@ -51,13 +54,13 @@ class V1::PaymentsController < V1::ApplicationController
   end
 
   # Only allow a trusted parameter "white list" through.
+  def query_params
+    params.permit(:user_id, :type)
+  end
+
+  # Only allow a trusted parameter "white list" through.
   def payment_params
     params.fetch(:data, {}).fetch(:attributes, {})
           .permit(:type, :name, :no, :desc)
   end
 end
-
-#       t.string :type
-#       t.string :name
-#       t.string :no
-#       t.text :desc

@@ -6,7 +6,7 @@ Rails.application.routes.draw do
     resources :markets
     resources :orders, except: :destroy
     resources :trades, except: :destroy
-    resources :otc_accounts, only: %i[index show]
+    resources :accounts, only: %i[index show]
     resources :transfers, except: %i[update destroy]
     resources :documents
     resources :phones

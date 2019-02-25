@@ -10,7 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_05_100319) do
+ActiveRecord::Schema.define(version: 2019_02_22_061416) do
+
+  create_table "accounts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.integer "member_id", null: false
+    t.string "currency_id", limit: 10, null: false
+    t.decimal "balance", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "locked", precision: 32, scale: 16, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["currency_id", "member_id"], name: "index_accounts_on_currency_id_and_member_id", unique: true
+    t.index ["member_id"], name: "index_accounts_on_member_id"
+  end
 
   create_table "active_storage_attachments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "name", null: false
@@ -31,6 +42,28 @@ ActiveRecord::Schema.define(version: 2019_02_05_100319) do
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "currencies", id: :string, limit: 8, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "name"
+    t.string "blockchain_key", limit: 32
+    t.string "symbol", limit: 1, null: false
+    t.string "type", limit: 30, default: "coin", null: false
+    t.decimal "deposit_fee", precision: 32, scale: 16, default: "0.0"
+    t.decimal "min_deposit_amount", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "min_collection_amount", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "withdraw_fee", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "min_withdraw_amount", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "withdraw_limit_24h", precision: 32, scale: 16, default: "0.0", null: false
+    t.decimal "withdraw_limit_72h", precision: 32, scale: 16, default: "0.0", null: false
+    t.integer "position", default: 0, null: false
+    t.string "options", limit: 1000, default: "{}", null: false
+    t.boolean "enabled", default: true, null: false
+    t.integer "base_factor", default: 1, null: false
+    t.integer "precision", default: 8, null: false
+    t.string "icon_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "documents", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -96,15 +129,6 @@ ActiveRecord::Schema.define(version: 2019_02_05_100319) do
     t.string "ord_type", default: "limit", null: false
   end
 
-  create_table "otc_accounts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
-    t.integer "member_id", null: false
-    t.string "currency_id", limit: 10, null: false
-    t.decimal "balance", precision: 32, scale: 16, default: "0.0", null: false
-    t.decimal "locked", precision: 32, scale: 16, default: "0.0", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "payments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "type"
     t.string "name"
@@ -157,8 +181,6 @@ ActiveRecord::Schema.define(version: 2019_02_05_100319) do
   create_table "trades", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.decimal "price", precision: 32, scale: 16, null: false
     t.decimal "volume", precision: 32, scale: 16, null: false
-    t.integer "base", null: false
-    t.integer "quote", null: false
     t.integer "trend", null: false
     t.string "market_id", limit: 20, null: false
     t.integer "ask_member_id", null: false
@@ -166,6 +188,16 @@ ActiveRecord::Schema.define(version: 2019_02_05_100319) do
     t.decimal "funds", precision: 32, scale: 16, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "master_id"
+    t.integer "state", default: 0
+    t.bigint "ask_id", null: false
+    t.bigint "bid_id", null: false
+    t.index ["ask_id"], name: "index_trades_on_ask_id"
+    t.index ["ask_member_id", "bid_member_id"], name: "index_trades_on_ask_member_id_and_bid_member_id"
+    t.index ["bid_id"], name: "index_trades_on_bid_id"
+    t.index ["created_at"], name: "index_trades_on_created_at"
+    t.index ["market_id", "created_at"], name: "index_trades_on_market_id_and_created_at"
+    t.index ["master_id"], name: "index_trades_on_master_id"
   end
 
   create_table "transfers", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -192,8 +224,12 @@ ActiveRecord::Schema.define(version: 2019_02_05_100319) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "username"
+    t.bigint "master_id"
+    t.string "type"
     t.index ["domain", "email"], name: "index_users_on_email", unique: true
+    t.index ["master_id"], name: "index_users_on_master_id"
     t.index ["uid"], name: "index_users_on_uid", unique: true
+    t.index ["username"], name: "index_users_on_username"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

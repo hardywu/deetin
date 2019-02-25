@@ -1,0 +1,7 @@
+one:
+  type: Coin
+  name: Gaming Xerion
+  code: GX
+  symbol: G
+  deposit_fee: 0
+  enabled: true
