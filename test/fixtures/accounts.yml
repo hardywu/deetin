@@ -4,12 +4,12 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-# one:
-#   member_id: 1
-#   currency_id: btc
-#   balance: 540
-# #
-# two:
-#   member_id: 1
-#   currency_id: eth
-#   balance: 540
+admin:
+  member_id: 1
+  currency_id: GX
+  balance: 540
+#
+member:
+  member_id: 2
+  currency_id: GX
+  balance: 540

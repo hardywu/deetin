@@ -1,6 +1,7 @@
 class V1::ApplicationController < ActionController::API
   include V1::Concerns::Auth
   include V1::Concerns::Constants
+  rescue_from StandardError, with: :invalid_param
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from AuthorizeFailed, with: :not_authorized
   rescue_from NoMethodError, with: :internal_error
@@ -8,6 +9,7 @@ class V1::ApplicationController < ActionController::API
   rescue_from InvalidParamError, with: :invalid_param
   rescue_from ActionController::ParameterMissing, with: :invalid_param
   rescue_from ActiveRecord::NotNullViolation, with: :invalid_param
+  rescue_from ActiveRecord::ActiveRecordError, with: :invalid_param
 
   private
 
@@ -57,5 +59,13 @@ class V1::ApplicationController < ActionController::API
 
   def current_user
     @current_user ||= authenticate(request.headers['Authorization'])
+  end
+
+  def attributes
+    params.fetch(:data, {}).fetch(:attributes, {})
+  end
+
+  def relationships
+    params.fetch(:data, {}).fetch(:relationships, {})
   end
 end

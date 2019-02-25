@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: documents
+#
+#  id         :bigint(8)        not null, primary key
+#  user_id    :bigint(8)        unsigned, not null
+#  upload     :string(255)
+#  doc_type   :string(255)
+#  doc_number :string(255)
+#  doc_expire :date
+#  metadata   :text(65535)
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
 class Document < ApplicationRecord
   has_one_attached :upload
 

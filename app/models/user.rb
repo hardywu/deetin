@@ -1,7 +1,32 @@
-class User < ApplicationRecord
-  ROLES = %w[admin accountant compliance member].freeze
+# == Schema Information
+#
+# Table name: users
+#
+#  id              :bigint(8)        not null, primary key
+#  uid             :string(255)      not null
+#  domain          :string(255)      default("nanyazq.com"), not null
+#  email           :string(255)      not null
+#  password_digest :string(255)      not null
+#  role            :string(255)      default("member"), not null
+#  level           :integer          default(0), not null
+#  state           :string(255)      default("pending"), not null
+#  otp             :boolean          default(FALSE)
+#  referral_id     :integer
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  username        :string(255)
+#  master_id       :bigint(8)
+#  type            :string(255)
+#
 
+class User < ApplicationRecord
+  ROLES = %w[admin accountant compliance member master].freeze
+  before_validation :assign_uid
+  validates :email, email: true, presence: true, uniqueness: true
+  validates :uid, presence: true, uniqueness: true
+  validates :password, presence: true, length: { minimum: 6 }, on: :create
   has_secure_password
+  scope :active, -> { where(state: 'active') }
 
   has_many  :phones, dependent: :destroy
   has_many  :labels, dependent: :destroy
@@ -9,23 +34,22 @@ class User < ApplicationRecord
   has_many :orders, dependent: :restrict_with_error
   has_many :positions, dependent: :restrict_with_error
   has_many :payments, dependent: :restrict_with_error
+  has_one :alipay, dependent: :restrict_with_error
   has_many :accounts, foreign_key: :member_id,
                       inverse_of: :member,
                       dependent: :restrict_with_error
-  validates :email, email: true, presence: true, uniqueness: true
-  validates :uid, presence: true, uniqueness: true
-  validates :password, presence: true, length: { minimum: 6 }, on: :create
-
-  scope :active, -> { where(state: 'active') }
-
-  before_validation :assign_uid
-  after_create :after_confirmation
-  after_create :touch_positions
-  after_create :touch_accounts
+  has_many :members, foreign_key: 'master_id',
+                     class_name: 'Member',
+                     dependent: :restrict_with_error,
+                     inverse_of: :master
   belongs_to :referrer, class_name: 'User', optional: true,
                         foreign_key: 'referral_id', inverse_of: :referees
   has_many :referees, class_name: 'User', foreign_key: 'referral_id',
                       inverse_of: :referrer, dependent: :restrict_with_error
+
+  after_create :after_confirmation
+  after_create :touch_positions
+  after_create :touch_accounts
 
   def active?
     state == 'active'
@@ -33,6 +57,10 @@ class User < ApplicationRecord
 
   def role
     super.inquiry
+  end
+
+  def master
+    self
   end
 
   def should_validate?
@@ -94,13 +122,15 @@ class User < ApplicationRecord
     def from_payload(p)
       params = filter_payload(p)
       validate_payload(params)
-      member = User.find_or_create_by(uid: p[:uid], email: p[:email]) do |m|
-        m.role = params[:role]
-        m.state = params[:state]
-        m.level = params[:level]
-      end
-      member.assign_attributes(params)
-      member.save if member.changed?
+      logger.info p
+      member = User.find_by(uid: p[:uid], email: p[:email])
+      # do |m|
+      #   m.role = params[:role]
+      #   m.state = params[:state]
+      #   m.level = params[:level]
+      # end
+      # member.assign_attributes(params)
+      # member.save if member.changed?
       member
     end
 

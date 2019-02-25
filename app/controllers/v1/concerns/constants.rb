@@ -5,7 +5,7 @@ module V1::Concerns::Constants
   NOT_ALLOWED = '0102'.freeze
   NOT_FOUND = '0201'.freeze
   INTERNAL_ERROR = '0200'.freeze
-  PARAMS_INVALID = '0201'.freeze
+  PARAMS_INVALID = '0202'.freeze
 
   class InvalidParamError < StandardError
     def initialize(msg = 'invalid parameter')

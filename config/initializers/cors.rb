@@ -11,7 +11,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
 
     resource '/v1/*',
              headers: :any,
-             methods: %i[get post put patchdelete options head],
+             methods: %i[get post put patch delete options head],
              expose: %w[Authorization JWT]
   end
 end

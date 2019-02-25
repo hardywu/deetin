@@ -1,6 +1,5 @@
 class V1::AccountsController < V1::ApplicationController
   before_action :set_authenticate
-  before_action :set_account, only: %i[show]
 
   def index
     @accounts = current_user.accounts

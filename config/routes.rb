@@ -5,7 +5,12 @@ Rails.application.routes.draw do
     root to: 'application#root'
     resources :markets
     resources :orders, except: :destroy
-    resources :trades, except: :destroy
+    resources :trades, except: :destroy do
+      member do
+        patch 'await'
+        patch 'done'
+      end
+    end
     resources :accounts, only: %i[index show]
     resources :transfers, except: %i[update destroy]
     resources :documents
@@ -18,5 +23,7 @@ Rails.application.routes.draw do
     post 'auth/signin', to: 'auth#signin'
     post 'auth/phone_vcode', to: 'auth#phone_vcode'
     get 'peatio_orders', to: 'peatio_orders#index'
+
+    mount ActionCable.server => '/cable'
   end
 end

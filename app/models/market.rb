@@ -1,6 +1,21 @@
-class Market < ApplicationRecord
-  attr_readonly :base_unit, :quote_unit, :base_precision, :quote_precision
+# == Schema Information
+#
+# Table name: markets
+#
+#  id              :bigint(8)        not null, primary key
+#  base_unit       :string(10)       not null
+#  quote_unit      :string(10)       not null
+#  base_precision  :integer          default(8), not null
+#  quote_precision :integer          default(8), not null
+#  enabled         :boolean          default(TRUE), not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  type            :string(255)
+#  code            :string(255)
+#  name            :string(255)
+#
 
+class Market < ApplicationRecord
   scope :enabled, -> { where(enabled: true) }
   scope :with_base_unit, -> (unit){ where(base_unit: unit) }
   scope :with_quote_unit, -> (unit){ where(quote_unit: unit) }

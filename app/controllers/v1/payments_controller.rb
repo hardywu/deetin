@@ -18,8 +18,7 @@ class V1::PaymentsController < V1::ApplicationController
 
   # POST /payments
   def create
-    @payment = Payment.new(payment_params)
-    @payment.user = current_user
+    @payment = Payment.new payment_params.merge(override_opts)
 
     if @payment.save
       render json: serialize(@payment), status: :created
@@ -58,9 +57,18 @@ class V1::PaymentsController < V1::ApplicationController
     params.permit(:user_id, :type)
   end
 
+  def override_opts
+    {
+      user_id: current_user.role == 'master' ? user_id : current_user.id
+    }.compact
+  end
+
+  def user_id
+    attributes.fetch(:user_id, current_user.id)
+  end
+
   # Only allow a trusted parameter "white list" through.
   def payment_params
-    params.fetch(:data, {}).fetch(:attributes, {})
-          .permit(:type, :name, :no, :desc)
+    attributes.permit(:type, :name, :no, :desc)
   end
 end

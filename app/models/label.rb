@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: labels
+#
+#  id         :bigint(8)        not null, primary key
+#  user_id    :bigint(8)        unsigned, not null
+#  key        :string(255)      not null
+#  value      :string(255)      not null
+#  scope      :string(255)      default("public"), not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
 class Label < ApplicationRecord
   belongs_to :user
 

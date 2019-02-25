@@ -8,22 +8,21 @@ class V1::OrdersController < V1::ApplicationController
                   .page(params[:page])
                   .per(params[:limit])
 
-    render json: serialize(orders, { include: %i[user] })
+    render json: serialize(orders, include: %i[user])
   end
 
   def show
-    render json: serialize(@order, { include: %i[user user.payments] })
+    render json: serialize(@order, include: %i[user user.payments])
   end
 
   def create
-    @order = klass.new order_params.merge(market_id: market_id)
-    @order.user = current_user
+    @order = klass.new order_params.merge(override_opts)
 
-    if @order.save
-      render json: serialize(@order), status: :created
-    else
-      render json: @order.errors, status: :unprocessable_entity
+    ActiveRecord::Base.transaction do
+      @order.save!
+      @order&.lock_funds!(@order.volume)
     end
+    render json: serialize(@order), status: :created
   end
 
   def update
@@ -58,20 +57,27 @@ class V1::OrdersController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def order_params
-    params.fetch(:data, {}).fetch(:attributes, {})
-          .permit(:price, :volume, :ord_type, :state)
+    attributes.permit(:price, :volume, :ord_type, :state)
   end
 
   # Only allow a trusted parameter "white list" through.
   def query_params
-    defaults = {
-      state: 'waiting'
-    }.compact
+    defaults = { state: 'waiting' }.compact
     params.permit(:state, :user_id, :market_id).reverse_merge(defaults)
   end
 
+  def override_opts
+    {
+      market_id: market_id,
+      user_id: current_user.role == 'master' ? user_id : current_user.id
+    }.compact
+  end
+
+  def user_id
+    attributes.fetch(:user_id, current_user.id)
+  end
+
   def market_id
-    params.fetch(:data, {}).fetch(:relationships, {})
-          .fetch(:market, {}).fetch(:data, {}).fetch(:id)
+    relationships.fetch(:market, {}).fetch(:data, {}).fetch(:id)
   end
 end

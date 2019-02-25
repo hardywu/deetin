@@ -9,3 +9,8 @@ one:
   base_unit: btc
   quote_unit: usd
   name: BTC/USD
+GX:
+  code: GX_CNY
+  base_unit: GX
+  quote_unit: CNY
+  name: BTC/USD
