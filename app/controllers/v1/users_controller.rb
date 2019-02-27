@@ -63,7 +63,7 @@ class V1::UsersController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    params.fetch(:data, {}).fetch(:attributes, {})
-          .permit(:email, :username)
+    opt = { role: ('bot' if attributes[:role] == 'bot')  }.compact
+    attributes.permit(:email, :username).merge(opt)
   end
 end

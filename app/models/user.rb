@@ -20,7 +20,7 @@
 #
 
 class User < ApplicationRecord
-  ROLES = %w[admin accountant compliance member master].freeze
+  ROLES = %w[admin accountant compliance member master bot].freeze
   before_validation :assign_uid
   validates :email, email: true, presence: true, uniqueness: true
   validates :uid, presence: true, uniqueness: true

@@ -1,4 +1,15 @@
-# frozen_string_literal: true
+# == Schema Information
+#
+# Table name: accounts
+#
+#  id          :bigint(8)        not null, primary key
+#  member_id   :integer          not null
+#  currency_id :string(10)       not null
+#  balance     :decimal(32, 16)  default(0.0), not null
+#  locked      :decimal(32, 16)  default(0.0), not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
 
 class Account < ApplicationRecord
   ZERO = 0.to_d
@@ -7,9 +18,7 @@ class Account < ApplicationRecord
 
   belongs_to :member, class_name: 'User', required: true
   validates :member_id, uniqueness: { scope: :currency_id }
-  validates :balance, numericality: { greater_than_or_equal_to: ZERO }
-  validates :member_id, uniqueness: { scope: :currency_id }
-  validates :balance, :locked, numericality: { greater_than_or_equal_to: 0.to_d }
+  validates :balance, :locked, numericality: { greater_than_or_equal_to: ZERO }
   scope :enabled, -> { joins(:currency).merge(Currency.where(enabled: true)) }
 
   # Returns active deposit address for account or creates new if any exists.
@@ -125,16 +134,3 @@ class Account < ApplicationRecord
   #     currency:        currency_id
   # end
 end
-
-# == Schema Information
-#
-# Table name: accounts
-#
-#  id          :bigint(8)        not null, primary key
-#  member_id   :integer          not null
-#  currency_id :string(10)       not null
-#  balance     :decimal(32, 16)  default(0.0), not null
-#  locked      :decimal(32, 16)  default(0.0), not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#
