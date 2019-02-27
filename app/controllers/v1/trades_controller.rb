@@ -3,7 +3,6 @@ class V1::TradesController < V1::ApplicationController
   before_action :set_trade, except: %i[index create]
 
   def index
-    logger.info query_params
     trades = Trade.where(query_params)
                   .order(params[:order_by])
                   .page(params[:page])
@@ -19,11 +18,15 @@ class V1::TradesController < V1::ApplicationController
 
   def create
     @trade = Trade.new trade_params.merge(override_opts)
-    if @trade.save
-      render json: serialize(@trade), status: :created
-    else
-      render json: @trade.errors, status: :unprocessable_entity
-    end
+
+    render json: serialize(@trade), status: :created
+  end
+
+  def quick
+    @trade = Trade.new quick_params
+    check_members
+    quick_record
+    render json: serialize(@trade), status: :created
   end
 
   def update
@@ -49,6 +52,8 @@ class V1::TradesController < V1::ApplicationController
       @trade.update! state: 'done'
       @trade.ask.unlock_and_sub_funds!(@trade.volume)
       @trade.bid.plus_funds!(@trade.volume)
+      @trade.ask.update! state: 'done'
+      @trade.bid.update! state: 'done'
     end
     render json: serialize(@trade)
   end
@@ -80,6 +85,36 @@ class V1::TradesController < V1::ApplicationController
   def trade_params
     attributes.permit :price, :volume, :enabled, :market_id,
                       :funds, :ask_id, :bid_id
+  end
+
+  def quick_params
+    state = attributes[:state] == 'done' ? 'done' : 'waiting'
+    attributes.permit(:price, :volume, :market_id, :funds,
+                      :ask_member_id, :bid_member_id).merge(state: state)
+  end
+
+  def check_members
+    cond = (!@trade.ask_member == !@trade.bid_member)
+    @trade.ask_member ||= current_user.rich_bot
+    @trade.bid_member ||= current_user.poor_bot
+    cond ||= @trade.ask_member&.master != current_user
+    cond ||= @trade.bid_member&.master != current_user
+    raise InvalidParamError if cond
+  end
+
+  def quick_record
+    ActiveRecord::Base.transaction do
+      order_params = @trade.slice(%i[price volume market_id state])
+      @trade.ask = Ask.create! user: @trade.ask_member, **order_params
+      @trade.bid = Bid.create! user: @trade.bid_member, **order_params
+      @trade.save!
+      if @trade.state == 'done'
+        @trade.ask.sub_funds!(@trade.volume)
+        @trade.bid.plus_funds!(@trade.volume)
+      else
+        @trade.ask.lock_funds!(@trade.volume)
+      end
+    end
   end
 
   def market_id

@@ -42,6 +42,11 @@ class User < ApplicationRecord
                      class_name: 'Member',
                      dependent: :restrict_with_error,
                      inverse_of: :master
+  has_many :bots, foreign_key: 'master_id',
+                  class_name: 'Bot',
+                  dependent: :restrict_with_error,
+                  inverse_of: :master
+  has_many :subs, foreign_key: 'master_id', class_name: 'User'
   belongs_to :referrer, class_name: 'User', optional: true,
                         foreign_key: 'referral_id', inverse_of: :referees
   has_many :referees, class_name: 'User', foreign_key: 'referral_id',
@@ -61,6 +66,20 @@ class User < ApplicationRecord
 
   def master
     self
+  end
+
+  def poor_bot
+    bots.joins(:accounts)
+        .group('users.id')
+        .order('SUM(accounts.balance) ASC')
+        .first
+  end
+
+  def rich_bot
+    bots.joins(:accounts)
+        .group('users.id')
+        .order('SUM(accounts.balance) DESC')
+        .first
   end
 
   def should_validate?

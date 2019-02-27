@@ -42,7 +42,7 @@ class V1::ProfilesController < V1::ApplicationController
   private
 
   def check_admin
-    set_admin_auth unless params[:id] == 'me'
+    set_authenticate unless params[:id] == 'me'
   end
 
   # Use callbacks to share common setup or constraints between actions.

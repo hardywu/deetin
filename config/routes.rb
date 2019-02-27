@@ -1,11 +1,20 @@
 Rails.application.routes.draw do
-  resources :profiles
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
   namespace :v1 do
+    namespace :admin do
+      resources :users
+      resources :accounts
+      resources :markets
+      resources :accounts, only: %i[index show]
+    end
+
     root to: 'application#root'
-    resources :markets
+    resources :markets, only: %i[index show]
     resources :orders, except: :destroy
     resources :trades, except: :destroy do
+      collection do
+        post 'quick'
+      end
       member do
         patch 'await'
         patch 'done'

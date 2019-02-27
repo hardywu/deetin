@@ -1,10 +1,14 @@
-class V1::UsersController < V1::ApplicationController
+class V1::Admin::UsersController < V1::Admin::ApplicationController
   before_action :set_user, only: %i[show update destroy]
-  before_action :set_query, only: %i[index]
   before_action :set_authenticate
 
   # GET /users
   def index
+    @users = User.where(query_params)
+                 .order(params[:order_by])
+                 .page(params[:page])
+                 .per(params[:limit])
+
     render json: serialize(@users, params: { jwt: true })
   end
 
@@ -15,7 +19,7 @@ class V1::UsersController < V1::ApplicationController
 
   # POST /users
   def create
-    @user = current_user.subs.new user_params.reverse_merge(default_params)
+    @user = User.new user_params.reverse_merge(state: 'active')
 
     if @user.save
       render json: serialize(@user), status: :created
@@ -49,27 +53,12 @@ class V1::UsersController < V1::ApplicationController
     @user = User.find(params[:id])
   end
 
-  def set_query
-    @users = current_user.subs
-                         .where(query_params)
-                         .order(params[:order_by])
-                         .page(params[:page])
-                         .per(params[:limit])
-  end
-
   def query_params
-    params.permit(:email, :master_id, :username, :uid, :type)
+    params.permit(:email, :master_id, :username, :uid, :type, :state)
   end
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    attributes.permit(:email, :username, :type)
-  end
-
-  def default_params
-    {
-      state: 'active',
-      type: 'member'
-    }
+    attributes.permit(:email, :username, :type, :role, :state)
   end
 end

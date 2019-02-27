@@ -52,9 +52,9 @@ class Trade < ApplicationRecord
 
   def set_members
     self.trend = 'up'
-    self.bid_member = bid.user
-    self.ask_member = ask.user
-    self.master = ask.user.master
+    self.bid_member ||= bid.user
+    self.ask_member ||= ask.user
+    self.master ||= ask.user.master
   end
 
   class << self

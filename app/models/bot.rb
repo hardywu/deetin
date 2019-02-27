@@ -19,7 +19,7 @@
 #  type            :string(255)
 #
 
-class Member < User
+class Bot < User
   belongs_to :master, class_name: 'User'
   before_validation :set_attrs
 
