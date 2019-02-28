@@ -95,8 +95,8 @@ class V1::TradesController < V1::ApplicationController
 
   def quick_params
     state = attributes[:state] == 'done' ? 'done' : 'waiting'
-    attributes.permit(:price, :volume, :market_id, :funds,
-                      :ask_member_id, :bid_member_id).merge(state: state)
+    attributes.permit(:volume, :market_id, :funds, :ask_member_id,
+                      :bid_member_id).merge(state: state, price: QUICK_PRICE)
   end
 
   def check_master(member)

@@ -25,6 +25,7 @@ class Order < ApplicationRecord
   belongs_to :user, required: true
   enum state: %i[waiting done cancelled passive]
   before_validation :set_attrs
+  validates :price, :volume, numericality: { greater_than_or_equal_to: 0.to_d }
 
   delegate :lock_funds!, to: :hold_account!
   delegate :plus_funds!, to: :hold_account!
