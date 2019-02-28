@@ -29,7 +29,7 @@ class V1::TradesController < V1::ApplicationController
 
   def quick_bid
     @trade = Trade.new quick_params
-    check_bid_member
+    check_master :bid_member
     @trade.ask_member = current_user.rich_bot
     @trade.quick_record!
     render json: serialize(@trade), status: :created
@@ -37,7 +37,7 @@ class V1::TradesController < V1::ApplicationController
 
   def quick_ask
     @trade = Trade.new quick_params
-    check_ask_member
+    check_master :ask_member
     @trade.bid_member = current_user.poor_bot
     @trade.quick_record!
     render json: serialize(@trade), status: :created
@@ -99,14 +99,9 @@ class V1::TradesController < V1::ApplicationController
                       :ask_member_id, :bid_member_id).merge(state: state)
   end
 
-  def check_bid_member
-    cond = !@trade.bid_member || @trade.bid_member&.master != current_user
-    raise InvalidParamError, 'members check failed' if cond
-  end
-
-  def check_ask_member
-    cond = !@trade.ask_member || @trade.ask_member&.master != current_user
-    raise InvalidParamError, 'members check failed' if cond
+  def check_master(member)
+    raise InvalidParamError, "#{member} master not corret" unless
+      @trade.public_send(member)&.master == current_user
   end
 
   def market_id

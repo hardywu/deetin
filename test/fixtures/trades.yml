@@ -8,9 +8,9 @@ one:
   trend: 1
   price: 100
   volume: 2
-  base: GX
-  quote: CNY
   market_id: 2
+  ask_id: 4
+  bid_id: 5
   ask_member_id: 2
   bid_member_id: 1
   funds: 200
@@ -19,9 +19,9 @@ two:
   trend: 1
   price: 100
   volume: 2
-  base: GX
-  quote: CNY
   market_id: 2
+  ask_id: 4
+  bid_id: 5
   ask_member_id: 1
   bid_member_id: 2
   funds: 200
