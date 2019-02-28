@@ -4,24 +4,24 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 # #
-# one:
-#   trend: 1
-#   price: 100
-#   volume: 2
-#   base: btc
-#   quote: usd
-#   market_id: btcusd
-#   ask_member_id: 1
-#   bid_member_id: 2
-#   funds: 200
+one:
+  trend: 1
+  price: 100
+  volume: 2
+  base: GX
+  quote: CNY
+  market_id: 2
+  ask_member_id: 2
+  bid_member_id: 1
+  funds: 200
 
-# two:
-#   trend: 1
-#   price: 100
-#   volume: 2
-#   base: btc
-#   quote: usd
-#   market_id: btcusd
-#   ask_member_id: 1
-#   bid_member_id: 2
-#   funds: 200
+two:
+  trend: 1
+  price: 100
+  volume: 2
+  base: GX
+  quote: CNY
+  market_id: 2
+  ask_member_id: 1
+  bid_member_id: 2
+  funds: 200

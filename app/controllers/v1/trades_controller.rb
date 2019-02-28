@@ -1,6 +1,6 @@
 class V1::TradesController < V1::ApplicationController
   before_action :set_authenticate
-  before_action :set_trade, except: %i[index create]
+  before_action :set_trade, only: %i[show update await done]
 
   def index
     trades = Trade.where(query_params)
@@ -17,15 +17,29 @@ class V1::TradesController < V1::ApplicationController
   end
 
   def create
+    override_opts = { market_id: market_id, state: 'initiated' }.compact
     @trade = Trade.new trade_params.merge(override_opts)
 
+    if @trade.save
+      render json: serialize(@trade, params: { jwt: true }), status: :created
+    else
+      render json: @trade.errors, status: :unprocessable_entity
+    end
+  end
+
+  def quick_bid
+    @trade = Trade.new quick_params
+    check_bid_member
+    @trade.ask_member = current_user.rich_bot
+    @trade.quick_record!
     render json: serialize(@trade), status: :created
   end
 
-  def quick
+  def quick_ask
     @trade = Trade.new quick_params
-    check_members
-    quick_record
+    check_ask_member
+    @trade.bid_member = current_user.poor_bot
+    @trade.quick_record!
     render json: serialize(@trade), status: :created
   end
 
@@ -61,9 +75,8 @@ class V1::TradesController < V1::ApplicationController
   private
 
   def query_params
-    defaults = { state: 'waiting' }.compact
     attrs = %i[state ask_member_id market_id bid_member_id ask_id bid_id price]
-    params.permit(attrs, state: []).reverse_merge(defaults)
+    params.permit(attrs, state: []).reverse_merge(state: 'waiting')
   end
 
   def set_trade
@@ -72,13 +85,6 @@ class V1::TradesController < V1::ApplicationController
 
   def serialize(*args)
     TradeSerializer.new(*args).serialized_json
-  end
-
-  def override_opts
-    {
-      market_id: market_id,
-      state: 'initiated'
-    }.compact
   end
 
   # Only allow a trusted parameter "white list" through.
@@ -93,28 +99,14 @@ class V1::TradesController < V1::ApplicationController
                       :ask_member_id, :bid_member_id).merge(state: state)
   end
 
-  def check_members
-    cond = (!@trade.ask_member == !@trade.bid_member)
-    @trade.ask_member ||= current_user.rich_bot
-    @trade.bid_member ||= current_user.poor_bot
-    cond ||= @trade.ask_member&.master != current_user
-    cond ||= @trade.bid_member&.master != current_user
-    raise InvalidParamError if cond
+  def check_bid_member
+    cond = !@trade.bid_member || @trade.bid_member&.master != current_user
+    raise InvalidParamError, 'members check failed' if cond
   end
 
-  def quick_record
-    ActiveRecord::Base.transaction do
-      order_params = @trade.slice(%i[price volume market_id state])
-      @trade.ask = Ask.create! user: @trade.ask_member, **order_params
-      @trade.bid = Bid.create! user: @trade.bid_member, **order_params
-      @trade.save!
-      if @trade.state == 'done'
-        @trade.ask.sub_funds!(@trade.volume)
-        @trade.bid.plus_funds!(@trade.volume)
-      else
-        @trade.ask.lock_funds!(@trade.volume)
-      end
-    end
+  def check_ask_member
+    cond = !@trade.ask_member || @trade.ask_member&.master != current_user
+    raise InvalidParamError, 'members check failed' if cond
   end
 
   def market_id

@@ -15,10 +15,10 @@ class V1::UsersController < V1::ApplicationController
 
   # POST /users
   def create
-    @user = current_user.subs.new user_params.reverse_merge(default_params)
+    @user = klass.new user_params.reverse_merge(default_params)
 
     if @user.save
-      render json: serialize(@user), status: :created
+      render json: serialize(@user, params: { jwt: true }), status: :created
     else
       render json: @user.errors, status: :unprocessable_entity
     end
@@ -35,7 +35,7 @@ class V1::UsersController < V1::ApplicationController
 
   # DELETE /users/1
   def destroy
-    @user.destroy
+    @user.destroy!
   end
 
   private
@@ -57,19 +57,20 @@ class V1::UsersController < V1::ApplicationController
                          .per(params[:limit])
   end
 
+  def klass
+    params.fetch(:data, {}).fetch(:type, 'member') == 'bot' ? Bot : Member
+  end
+
   def query_params
-    params.permit(:email, :master_id, :username, :uid, :type)
+    params.permit(:email, :username, :uid, :type)
   end
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    attributes.permit(:email, :username, :type)
+    attributes.permit(:email, :username)
   end
 
   def default_params
-    {
-      state: 'active',
-      type: 'member'
-    }
+    { state: 'active', master_id: current_user.id }
   end
 end

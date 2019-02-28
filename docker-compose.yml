@@ -24,4 +24,5 @@ services:
 
 networks:
   default:
-    name: microkube_default
+    external:
+      name: microkube_default

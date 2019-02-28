@@ -13,7 +13,8 @@ Rails.application.routes.draw do
     resources :orders, except: :destroy
     resources :trades, except: :destroy do
       collection do
-        post 'quick'
+        post 'quick_bid'
+        post 'quick_ask'
       end
       member do
         patch 'await'

@@ -9,14 +9,18 @@ class V1::OrdersControllerTest < ActionDispatch::IntegrationTest
 
   test 'should create bid' do
     data = { data: { attributes: { price: 232, volume: 4, ord_type: 'limit' }, type: 'bid', relationships: { market: { data: { id: @market.id } } } } }
-    post v1_orders_url, params: data, headers: @token_head
+    assert_difference('Bid.count') do
+      post v1_orders_url, params: data, headers: @token_head
+    end
     assert_response :success
   end
 
   test 'should create ask' do
     account = accounts(:member)
     data = { data: { attributes: { price: 232, volume: 4, ord_type: 'limit' }, type: 'ask', relationships: { market: { data: { id: @market.id } } } } }
-    post v1_orders_url, params: data, headers: @token_head
+    assert_difference('Ask.count') do
+      post v1_orders_url, params: data, headers: @token_head
+    end
     assert_response :success
     assert_equal account.balance - 4, Account.find(account.id).balance
     assert_equal account.locked + 4, Account.find(account.id).locked

@@ -23,3 +23,37 @@ member:
   state: active
   level: 2
   uid: 2132143324223
+
+master:
+  id: 3
+  email: john@deetin.io
+  password_digest: <%= BCrypt::Password.create('123456') %>
+  domain: nanyazq.com
+  role: master
+  state: active
+  level: 2
+  uid: 213214311
+
+bot:
+  id: 4
+  type: Bot
+  email: bot@deetin.io
+  password_digest: <%= BCrypt::Password.create('123456') %>
+  domain: nanyazq.com
+  role: member
+  state: active
+  master_id: 3
+  level: 0
+  uid: 0000001
+
+subaccount:
+  id: 5
+  type: Member
+  email: member@deetin.io
+  password_digest: <%= BCrypt::Password.create('123456') %>
+  domain: nanyazq.com
+  role: member
+  state: active
+  master_id: 3
+  level: 0
+  uid: 0000002

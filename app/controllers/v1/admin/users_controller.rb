@@ -1,6 +1,5 @@
 class V1::Admin::UsersController < V1::Admin::ApplicationController
   before_action :set_user, only: %i[show update destroy]
-  before_action :set_authenticate
 
   # GET /users
   def index
@@ -59,6 +58,6 @@ class V1::Admin::UsersController < V1::Admin::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    attributes.permit(:email, :username, :type, :role, :state)
+    attributes.permit(:email, :username, :role, :state)
   end
 end

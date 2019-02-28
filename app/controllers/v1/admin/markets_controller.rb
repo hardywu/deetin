@@ -1,5 +1,4 @@
 class V1::Admin::MarketsController < V1::Admin::ApplicationController
-  before_action :set_authenticate, except: %i[index show]
   before_action :set_market, except: %i[index create]
 
   def index

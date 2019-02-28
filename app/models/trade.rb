@@ -41,17 +41,37 @@ class Trade < ApplicationRecord
   delegate :quote_unit, to: :market
 
   def ask_alipay
-    ask_member.alipay
+    ask_member&.alipay
   end
 
   def bid_alipay
-    bid_member.alipay
+    bid_member&.alipay
+  end
+
+  def quick_record!
+    ActiveRecord::Base.transaction do
+      params = slice(%i[price volume market_id state]).symbolize_keys
+      self.ask = Ask.create! user: ask_member, **params
+      self.bid = Bid.create! user: bid_member, **params
+      save!
+      settle_funds!
+    end
+  end
+
+  def settle_funds!
+    if state == 'done'
+      ask.sub_funds!(volume)
+      bid.plus_funds!(volume)
+    else
+      ask.lock_funds!(volume)
+    end
   end
 
   attr_accessor :side
 
   def set_members
     self.trend = 'up'
+    self.funds = price * volume
     self.bid_member ||= bid.user
     self.ask_member ||= ask.user
     self.master ||= ask.user.master
@@ -59,20 +79,24 @@ class Trade < ApplicationRecord
 
   class << self
     def latest_price(market)
-      with_market(market).order(id: :desc).select(:price).first.try(:price) || ZERO
+      with_market(market).order(id: :desc).select(:price).first.try(:price) ||
+        ZERO
     end
 
-    def filter(market, timestamp, from, to, limit, order)
-      trades = with_market(market).order(order)
-      trades = trades.limit(limit) if limit.present?
-      trades = trades.where('created_at <= ?', timestamp) if timestamp.present?
-      trades = trades.where('id > ?', from) if from.present?
-      trades = trades.where('id < ?', to) if to.present?
+    def filter(market, *opts)
+      trades = with_market(market).order(opts[:order])
+      trades = trades.limit(opts[:limit]) if opts[:limit].present?
+      if opts[:timestamp].present?
+        trades = trades.where('created_at <= ?', opts[:timestamp])
+      end
+      trades = trades.where('id > ?', opts[:from]) if opts[:from].present?
+      trades = trades.where('id < ?', opts[:to]) if opts[:to].present?
       trades
     end
 
-    def for_member(market, member, options={})
-      trades = filter(market, options[:time_to], options[:from], options[:to], options[:limit], options[:order]).where("ask_member_id = ? or bid_member_id = ?", member.id, member.id)
+    def for_member(market, member, options = {})
+      trades = filter market, **options.slice(%i[time_to from to limit order])
+      trades = trades.where('ask_member_id = ? or bid_member_id = ?', member.id, member.id)
       trades.each do |trade|
         trade.side = trade.ask_member_id == member.id ? 'ask' : 'bid'
       end

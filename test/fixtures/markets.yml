@@ -5,11 +5,14 @@
 # below each fixture, per the syntax in the comments below
 #
 one:
+  id: 1
   code: BTCUSD
   base_unit: btc
   quote_unit: usd
   name: BTC/USD
+
 GX:
+  id: 2
   code: GX_CNY
   base_unit: GX
   quote_unit: CNY

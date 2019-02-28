@@ -4,26 +4,25 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 # # #
-one:
+bid:
   type: Bid
-  base: btc
-  quote: usd
+  base: GX
+  quote: CNY
   ord_type: limit
-  market_id: 1
+  market_id: 2
   price: 100
   volume: 10
   origin_volume: 10
   state: active
-  user: member
+  user_id: 4
 
-# two:
-#   type: ask
-#   base: btc
-#   quote: usd
-#   market_id: btcusd
-#   price: 100
-#   volume: 10
-#   origin_volume: 10
-#   state: active
-#   user_id: 1
-
+ask:
+  type: Ask
+  base: GX
+  quote: CNY
+  market_id: 2
+  price: 100
+  volume: 10
+  origin_volume: 10
+  state: active
+  user_id: 3

@@ -1,6 +1,5 @@
 class V1::Admin::AccountsController < V1::Admin::ApplicationController
   before_action :set_account, except: %i[index]
-  before_action :set_authenticate
 
   def index
     @accounts = Account.where(query_params)
