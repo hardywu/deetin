@@ -60,8 +60,8 @@ class Trade < ApplicationRecord
 
   def settle_funds!
     if state == 'done'
-      ask.sub_funds!(volume)
-      bid.plus_funds!(volume)
+      ask.sub_funds!(volume).update! state: 'done'
+      bid.plus_funds!(volume).update! state: 'done'
     else
       ask.lock_funds!(volume)
     end
