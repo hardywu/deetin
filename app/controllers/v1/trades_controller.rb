@@ -21,7 +21,7 @@ class V1::TradesController < V1::ApplicationController
     @trade = Trade.new trade_params.merge(override_opts)
 
     if @trade.save
-      render json: serialize(@trade, params: { jwt: true }), status: :created
+      render json: serialize(@trade), status: :created
     else
       render json: @trade.errors, status: :unprocessable_entity
     end
@@ -29,7 +29,7 @@ class V1::TradesController < V1::ApplicationController
 
   def quick_bid
     @trade = Trade.new quick_params
-    check_master :bid_member
+    check_master_for :bid_member
     @trade.ask_member = current_user.rich_bot
     @trade.quick_record!
     render json: serialize(@trade), status: :created
@@ -37,7 +37,7 @@ class V1::TradesController < V1::ApplicationController
 
   def quick_ask
     @trade = Trade.new quick_params
-    check_master :ask_member
+    check_master_for :ask_member
     @trade.bid_member = current_user.poor_bot
     @trade.quick_record!
     render json: serialize(@trade), status: :created
@@ -99,7 +99,7 @@ class V1::TradesController < V1::ApplicationController
                       :bid_member_id).merge(state: state, price: QUICK_PRICE)
   end
 
-  def check_master(member)
+  def check_master_for(member)
     raise InvalidParamError, "#{member} master not corret" unless
       @trade.public_send(member)&.master == current_user
   end
