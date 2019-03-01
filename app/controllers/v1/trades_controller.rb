@@ -52,7 +52,7 @@ class V1::TradesController < V1::ApplicationController
   end
 
   def await
-    if @trade.update(state: 'waiting')
+    if @trade.state == 'waiting' || @trade.update(state: 'waiting') 
       MonitorChannel.broadcast_to nil, serialize(@trade)
       NotificationChannel.broadcast_to @trade.ask_member, serialize(@trade)
       render json: serialize(@trade)
@@ -62,13 +62,7 @@ class V1::TradesController < V1::ApplicationController
   end
 
   def done
-    ActiveRecord::Base.transaction do
-      @trade.update! state: 'done'
-      @trade.ask.unlock_and_sub_funds!(@trade.volume)
-      @trade.bid.plus_funds!(@trade.volume)
-      @trade.ask.update! state: 'done'
-      @trade.bid.update! state: 'done'
-    end
+    @trade.state == 'done' || @trade.done_record!
     render json: serialize(@trade)
   end
 

@@ -58,6 +58,22 @@ class Trade < ApplicationRecord
     end
   end
 
+  def done_record!
+    ActiveRecord::Base.transaction do
+      ask.unlock_and_sub_funds!(volume)
+      bid.plus_funds!(volume)
+      ask.volume -= volume
+      ask.funds_received += funds
+      ask.state = 'done' if ask.volume == ZERO
+      ask.save!
+      bid.volume -= volume
+      bid.funds_received += funds
+      bid.state = 'done' if bid.volume == ZERO
+      bid.save!
+      update! state: 'done'
+    end
+  end
+
   def settle_funds!
     if state == 'done'
       ask.sub_funds!(volume).update! state: 'done'

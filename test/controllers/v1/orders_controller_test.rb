@@ -32,4 +32,11 @@ class V1::OrdersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal Order.count, resp['data'].size
   end
+
+  test 'should get 0 done orders' do
+    get v1_orders_url, headers: @token_head, params: { state: 'done' }
+    resp = JSON.parse(@response.body)
+    assert_response :success
+    assert_equal 0, resp['data'].size
+  end  
 end

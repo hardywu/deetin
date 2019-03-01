@@ -63,7 +63,7 @@ class V1::OrdersController < V1::ApplicationController
   # Only allow a trusted parameter "white list" through.
   def query_params
     defaults = { state: 'waiting' }.compact
-    params.permit(:state, :user_id, :market_id).reverse_merge(defaults)
+    params.permit(:state, :user_id, :market_id, :type, state: []).reverse_merge(defaults)
   end
 
   def override_opts
