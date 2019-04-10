@@ -5,7 +5,9 @@ class V1::UsersController < V1::ApplicationController
 
   # GET /users
   def index
-    render json: serialize(@users, params: { jwt: true })
+    options = {}
+    options[:meta] = { total: @users.total_count }
+    render json: serialize(@users, options)
   end
 
   # GET /users/1
@@ -16,6 +18,7 @@ class V1::UsersController < V1::ApplicationController
   # POST /users
   def create
     @user = klass.new user_params.reverse_merge(default_params)
+    authorize @user
 
     if @user.save
       render json: serialize(@user, params: { jwt: true }), status: :created
@@ -36,6 +39,17 @@ class V1::UsersController < V1::ApplicationController
   # DELETE /users/1
   def destroy
     @user.destroy!
+  end
+
+  def listen
+    status = Rails.cache.read("bot_status/#{params[:id]}")
+    if status.nil?
+      Rails.cache.write("bot_status/#{params[:id]}", 0, expires_in: 1.minute)
+      ListenAlipayJob.perform_later(params[:id], params[:cookie])
+      render json: { status: status, msg: 'pendding' }
+    else
+      render json: { status: status, msg: 'already working' }
+    end
   end
 
   private
@@ -71,6 +85,6 @@ class V1::UsersController < V1::ApplicationController
   end
 
   def default_params
-    { state: 'active', master_id: current_user.id }
+    { state: 'active', domain: current_user.uid }
   end
 end

@@ -53,7 +53,7 @@ class V1::Admin::UsersController < V1::Admin::ApplicationController
   end
 
   def query_params
-    params.permit(:email, :master_id, :username, :uid, :type, :state)
+    params.permit(:email, :domain, :username, :uid, :type, :state)
   end
 
   # Only allow a trusted parameter "white list" through.

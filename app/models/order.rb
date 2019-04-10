@@ -33,12 +33,12 @@ class Order < ApplicationRecord
 
   # @deprecated
   def hold_account
-    member.get_account(base)
+    (user.master || user).get_account(base)
   end
 
   # @deprecated
   def hold_account!
-    Account.lock.find_by!(member_id: user_id, currency_id: base)
+    Account.lock.find_by!(member_id: user.master&.id || user_id, currency_id: base)
   end
 
   def fix_number_precision

@@ -14,7 +14,6 @@ Rails.application.routes.draw do
     resources :trades, except: :destroy do
       collection do
         post 'quick_bid'
-        post 'quick_ask'
       end
       member do
         patch 'await'
@@ -26,7 +25,11 @@ Rails.application.routes.draw do
     resources :documents
     resources :phones
     resources :profiles
-    resources :users
+    resources :users do
+      member do
+        post 'listen'
+      end
+    end
     resources :payments
     resources :positions, only: %i[index]
     post 'auth/signup', to: 'auth#signup'

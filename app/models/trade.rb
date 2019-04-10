@@ -12,31 +12,33 @@
 #  funds         :decimal(32, 16)  not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
+#  master_id     :bigint(8)
 #  state         :integer          default("done")
 #  ask_id        :bigint(8)        not null
 #  bid_id        :bigint(8)        not null
+#  callback_url  :string(255)
+#  no            :string(255)
 #
 
 class Trade < ApplicationRecord
   include BelongsToMarket
   ZERO = '0.0'.to_d
-  enum state: %i[done initiated waiting]
+  attr_accessible :subject, :charge_url
+  enum state: %i[done waiting cancelled]
   enum trend: { up: 1, down: 0 }
   scope :h24, -> { where('created_at > ?', 24.hours.ago) }
   validates :price, :volume, :funds,
             numericality: { greater_than_or_equal_to: 0.to_d }
-  before_validation :set_members
+  before_validation :set_extra_attrs
 
-  belongs_to :market, required: true
+  belongs_to :market
   belongs_to :master, class_name: 'User'
-  belongs_to :ask, class_name: 'Ask', foreign_key: :ask_id, required: true
-  belongs_to :bid, class_name: 'Bid', foreign_key: :bid_id, required: true
+  belongs_to :ask, class_name: 'Ask', foreign_key: :ask_id
+  belongs_to :bid, class_name: 'Bid', foreign_key: :bid_id
   belongs_to :ask_member, class_name: 'User',
-                          foreign_key: :ask_member_id,
-                          required: true
+                          foreign_key: :ask_member_id
   belongs_to :bid_member, class_name: 'User',
-                          foreign_key: :bid_member_id,
-                          required: true
+                          foreign_key: :bid_member_id
   delegate :base_unit, to: :market
   delegate :quote_unit, to: :market
 
@@ -46,6 +48,21 @@ class Trade < ApplicationRecord
 
   def bid_alipay
     bid_member&.alipay
+  end
+
+  def create_charge_url
+    response = bid_member.alipay_client.execute(
+      method: 'alipay.trade.precreate',
+      notify_url: Config['alipay_notify_url'].value,
+      biz_content: biz_content
+    )
+    JSON.parse(response)['alipay_trade_precreate_response']['qr_code']
+  end
+
+  def biz_content
+    JSON.generate({ out_trade_no: no,
+                    total_amount: funds.to_s,
+                    subject: subject }, ascii_only: true)
   end
 
   def quick_record!
@@ -58,18 +75,26 @@ class Trade < ApplicationRecord
     end
   end
 
+  def done_ask!
+    ask.unlock_and_sub_funds!(volume)
+    ask.volume -= volume
+    ask.funds_received += funds
+    ask.state = 'done' if ask.volume == ZERO
+    ask.save!
+  end
+
+  def done_bid!
+    bid.plus_funds!(volume)
+    bid.volume -= volume
+    bid.funds_received += funds
+    bid.state = 'done' if bid.volume == ZERO
+    bid.save!
+  end
+
   def done_record!
     ActiveRecord::Base.transaction do
-      ask.unlock_and_sub_funds!(volume)
-      bid.plus_funds!(volume)
-      ask.volume -= volume
-      ask.funds_received += funds
-      ask.state = 'done' if ask.volume == ZERO
-      ask.save!
-      bid.volume -= volume
-      bid.funds_received += funds
-      bid.state = 'done' if bid.volume == ZERO
-      bid.save!
+      done_ask!
+      done_bid!
       update! state: 'done'
     end
   end
@@ -85,41 +110,16 @@ class Trade < ApplicationRecord
 
   attr_accessor :side
 
-  def set_members
-    self.trend = 'up'
-    self.funds = price * volume
-    self.bid_member ||= bid.user
-    self.ask_member ||= ask.user
-    self.master ||= ask.user.master
+  def set_extra_attrs
+    assign_attributes no: Nanoid.generate, trend: 'up', funds: price * volume,
+                      bid_member: bid.user, ask_member: ask.user,
+                      master: ask.user.master
   end
 
   class << self
     def latest_price(market)
-      with_market(market).order(id: :desc).select(:price).first.try(:price) ||
-        ZERO
-    end
-
-    def filter(market, *opts)
-      trades = with_market(market).order(opts[:order])
-      trades = trades.limit(opts[:limit]) if opts[:limit].present?
-      if opts[:timestamp].present?
-        trades = trades.where('created_at <= ?', opts[:timestamp])
-      end
-      trades = trades.where('id > ?', opts[:from]) if opts[:from].present?
-      trades = trades.where('id < ?', opts[:to]) if opts[:to].present?
-      trades
-    end
-
-    def for_member(market, member, options = {})
-      trades = filter market, **options.slice(%i[time_to from to limit order])
-      trades = trades.where('ask_member_id = ? or bid_member_id = ?', member.id, member.id)
-      trades.each do |trade|
-        trade.side = trade.ask_member_id == member.id ? 'ask' : 'bid'
-      end
-    end
-
-    def avg_h24_price(market)
-      with_market(market).h24.select(:price).average(:price).to_d
+      trade = with_market(market).order(id: :desc).limit(1).first
+      trade ? trade.price : 0
     end
   end
 end

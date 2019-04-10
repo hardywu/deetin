@@ -29,7 +29,7 @@ class V1::AuthController < V1::ApplicationController
 
   def signin
     raise Peatio::Auth::Error, '登录失败' unless
-      @user.authenticate params[:password]
+      @user&.authenticate params[:password]
 
     response.headers['Authorization'] = "Bearer #{@user.jwt}"
     render json: serialize(@user), status: :ok
@@ -38,7 +38,7 @@ class V1::AuthController < V1::ApplicationController
   private
 
   def set_user
-    @user = User.find_by uid: params[:uid]
+    @user = User.find_by(uid: params[:uid]) || User.find_by(email: params[:uid])
   end
 
   def serialize(user)

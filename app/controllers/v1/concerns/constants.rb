@@ -7,6 +7,7 @@ module V1::Concerns::Constants
   INTERNAL_ERROR = '0200'.freeze
   PARAMS_INVALID = '0202'.freeze
   QUICK_PRICE = 0.1
+  QUICK_MARKET = 'GX/CNY'.freeze
 
   class InvalidParamError < StandardError
     def initialize(msg = 'invalid parameter')

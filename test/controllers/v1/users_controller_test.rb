@@ -16,20 +16,24 @@ class V1::UsersControllerTest < ActionDispatch::IntegrationTest
 
   test 'should create a member' do
     params = { data: { attributes: { email: 'test@sample.com' }, type: 'member' } }
-    assert_difference('Member.count') do
+    assert_difference('Member.count', 1) do
       post v1_users_url, params: params, as: :json, headers: @token_head
     end
 
     assert_response 201
   end
 
-  test 'should create a bot' do
+  test 'master should not create a bot' do
     params = { data: { attributes: { email: 'bot@sample.com' }, type: 'bot' } }
-    assert_difference('Bot.count') do
+    assert_difference('Bot.count', 0) do
       post v1_users_url, params: params, as: :json, headers: @token_head
     end
 
-    assert_response 201
+    assert_response :forbidden
+  end
+
+  test 'agent should create a bot' do
+    assert true
   end
 
   test 'should show user' do

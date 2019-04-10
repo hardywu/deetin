@@ -4,7 +4,7 @@
 #
 #  id              :bigint(8)        not null, primary key
 #  uid             :string(255)      not null
-#  domain          :string(255)      default("nanyazq.com"), not null
+#  domain          :string(255)
 #  email           :string(255)      not null
 #  password_digest :string(255)      not null
 #  role            :string(255)      default("member"), not null
@@ -15,17 +15,19 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  username        :string(255)
-#  master_id       :bigint(8)
 #  type            :string(255)
+#  enabled         :boolean          default(FALSE), not null
+#  secret          :string(255)
 #
 
 class Member < User
-  belongs_to :master, class_name: 'User'
+  belongs_to :master, class_name: 'User',
+                      primary_key: 'uid',
+                      foreign_key: :domain
   before_validation :set_attrs
 
   def set_attrs
     self.password = '000000'
-    self.domain = master.domain
   end
 
   def authenticate(_unencrypted_password)

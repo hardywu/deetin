@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_22_061416) do
+ActiveRecord::Schema.define(version: 2019_04_09_150104) do
 
   create_table "accounts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "member_id", null: false
@@ -42,6 +42,10 @@ ActiveRecord::Schema.define(version: 2019_02_22_061416) do
     t.string "checksum", null: false
     t.datetime "created_at", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "configs", id: :string, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
+    t.string "value"
   end
 
   create_table "currencies", id: :string, limit: 8, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -97,18 +101,15 @@ ActiveRecord::Schema.define(version: 2019_02_22_061416) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "markets", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
-    t.string "base_unit", limit: 10, null: false
-    t.string "quote_unit", limit: 10, null: false
+  create_table "markets", id: :string, limit: 20, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "base_precision", limit: 1, default: 8, null: false
     t.integer "quote_precision", limit: 1, default: 8, null: false
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "type"
-    t.string "code"
     t.string "name"
-    t.index ["code"], name: "index_markets_on_code", unique: true
+    t.integer "position", default: 0, null: false
   end
 
   create_table "orders", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -137,6 +138,12 @@ ActiveRecord::Schema.define(version: 2019_02_22_061416) do
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "limit", precision: 32, scale: 2, default: "1000.0"
+    t.decimal "daily_limit", precision: 32, scale: 2, default: "50000.0"
+    t.decimal "monthly_limit", precision: 32, scale: 2, default: "1550000.0"
+    t.string "appid"
+    t.string "pubkey"
+    t.string "secret"
     t.index ["user_id", "type"], name: "index_payments_on_user_id_and_type", unique: true
     t.index ["user_id"], name: "index_payments_on_user_id"
   end
@@ -192,12 +199,15 @@ ActiveRecord::Schema.define(version: 2019_02_22_061416) do
     t.integer "state", default: 0
     t.bigint "ask_id", null: false
     t.bigint "bid_id", null: false
+    t.string "callback_url"
+    t.string "no"
     t.index ["ask_id"], name: "index_trades_on_ask_id"
     t.index ["ask_member_id", "bid_member_id"], name: "index_trades_on_ask_member_id_and_bid_member_id"
     t.index ["bid_id"], name: "index_trades_on_bid_id"
     t.index ["created_at"], name: "index_trades_on_created_at"
     t.index ["market_id", "created_at"], name: "index_trades_on_market_id_and_created_at"
     t.index ["master_id"], name: "index_trades_on_master_id"
+    t.index ["no"], name: "index_trades_on_no", unique: true
   end
 
   create_table "transfers", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
@@ -213,7 +223,7 @@ ActiveRecord::Schema.define(version: 2019_02_22_061416) do
 
   create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "uid", null: false
-    t.string "domain", default: "nanyazq.com", null: false
+    t.string "domain"
     t.string "email", null: false
     t.string "password_digest", null: false
     t.string "role", default: "member", null: false
@@ -224,10 +234,11 @@ ActiveRecord::Schema.define(version: 2019_02_22_061416) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "username"
-    t.bigint "master_id"
     t.string "type"
+    t.boolean "enabled", default: false, null: false
+    t.string "secret"
     t.index ["domain", "email"], name: "index_users_on_email", unique: true
-    t.index ["master_id"], name: "index_users_on_master_id"
+    t.index ["enabled"], name: "index_users_on_enabled"
     t.index ["uid"], name: "index_users_on_uid", unique: true
     t.index ["username"], name: "index_users_on_username"
   end

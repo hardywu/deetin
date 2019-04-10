@@ -2,17 +2,19 @@ version: '3.6'
 
 services:
   deetin:
-    build:
-      context: ./
-      dockerfile: Dockerfile.dev
+    image: hardywu/deetin:latest
     volumes:
-      - ./:/app
+      - ./app:/app/app
+      - ./config:/app/config
+      - ./db:/app/db
+      - ./test:/app/test
     depends_on:
       - db
       - redis
     ports:
-      - "3000:3000"
+      - 4000:3000
     environment:
+      TZ: UTC
       DATABASE_HOST: db
       DATABASE_PASS: changeme
       JWT_PUBLIC_KEY: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF6NWNmZnE1cjV3bnNka3l5dzBaRwpUVUdPQkUraGNBbGVRWUxIS2ZLczM2N096YXpQYzJOREFBRk5FRStIL01MTEY1ZGV6eFdQaWp5YVNoNmx3ZzdwCk9UV2xqa2FpRXJhbzVkR1p6YldJZnpvQllrWUJ4R094TVMxMnRyb0o3Z3lnSjRMbmx4RWNqZVpNcmYyWUR6bnIKY1RrdHJMNFltNmZQWFR3YlVSYklYR3gwWlRqazdvZUlTTHhuT0ZJOTJ1a0hRcUNWYU45OFZ0Kzc0UjZHWlVLagoxeTNyZGFnbU5IRTIxRk9BR0hHY1pKbjZPREMyWkdHYjlINHVWUFVFalk5dXQ4aVUybk9xczBreFIxeU84bGd3CjE3OW1tdFlHQi9lMTZmQVpWck1zd0dwNkN6T2FUclJmYkFEV0l6NjRJQXNoTG8zaGorRmNaVk5yakhQbjlDeXYKcHdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg
@@ -20,9 +22,49 @@ services:
       TWILIO_AUTH_TOKEN: 4f2ec074050f7ac2cefa48c240317bc5
       TWILIO_PHONE_NUMBER: +15005550006
       REDIS_URL: redis://redis:6379/0
-    command: bash -c "bundle install && bundle exec rails db:create db:migrate && puma --config config/puma.rb"
+    command: sh -c "bundle exec rails db:create db:migrate && bundle exec puma --config config/puma.rb"
 
-networks:
-  default:
-    external:
-      name: microkube_default
+
+  sidekiq:
+    image: hardywu/deetin:latest
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+      - ./db:/app/db
+      - ./test:/app/test
+    depends_on:
+      - db
+      - redis
+    environment:
+      TZ: UTC
+      DATABASE_HOST: db
+      DATABASE_PASS: changeme
+      JWT_PUBLIC_KEY: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF6NWNmZnE1cjV3bnNka3l5dzBaRwpUVUdPQkUraGNBbGVRWUxIS2ZLczM2N096YXpQYzJOREFBRk5FRStIL01MTEY1ZGV6eFdQaWp5YVNoNmx3ZzdwCk9UV2xqa2FpRXJhbzVkR1p6YldJZnpvQllrWUJ4R094TVMxMnRyb0o3Z3lnSjRMbmx4RWNqZVpNcmYyWUR6bnIKY1RrdHJMNFltNmZQWFR3YlVSYklYR3gwWlRqazdvZUlTTHhuT0ZJOTJ1a0hRcUNWYU45OFZ0Kzc0UjZHWlVLagoxeTNyZGFnbU5IRTIxRk9BR0hHY1pKbjZPREMyWkdHYjlINHVWUFVFalk5dXQ4aVUybk9xczBreFIxeU84bGd3CjE3OW1tdFlHQi9lMTZmQVpWck1zd0dwNkN6T2FUclJmYkFEV0l6NjRJQXNoTG8zaGorRmNaVk5yakhQbjlDeXYKcHdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg
+      TWILIO_ACCOUNT_SID: AC2a7da4b5ea5e9c3c69ba376042da67de
+      TWILIO_AUTH_TOKEN: 4f2ec074050f7ac2cefa48c240317bc5
+      TWILIO_PHONE_NUMBER: +15005550006
+      REDIS_URL: redis://redis:6379/0
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+  db:
+    image: mysql:5.7
+    volumes:
+      - datadir:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: changeme
+    ports:
+      - 3306:3306
+
+  redis:
+    image: redis:5.0.3
+    volumes:
+      - redisdir:/data
+
+volumes:
+  datadir:
+  redisdir:
+
+# networks:
+#   default:
+#     external:
+#       name: microkube_default

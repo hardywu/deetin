@@ -1,0 +1,14 @@
+---
+:concurrency: 5
+development:
+  :concurrency: 10
+  :queues:
+    - deetin_development_default
+    - deetin_development_low
+    - [deetin_development_critical, 2]
+production:
+  :concurrency: 20
+  :queues:
+    - deetin_production_default
+    - deetin_production_low
+    - [deetin_production_critical, 2]

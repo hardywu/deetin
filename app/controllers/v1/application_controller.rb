@@ -1,7 +1,9 @@
 class V1::ApplicationController < ActionController::API
+  include Pundit
   include V1::Concerns::Auth
   include V1::Concerns::Constants
-  rescue_from StandardError, with: :invalid_param
+  # rescue_from StandardError, with: :invalid_param
+  rescue_from Pundit::NotAuthorizedError, with: :not_authorized
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from AuthorizeFailed, with: :not_authorized
   rescue_from NoMethodError, with: :internal_error

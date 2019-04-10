@@ -4,7 +4,7 @@
 #
 #  id              :bigint(8)        not null, primary key
 #  uid             :string(255)      not null
-#  domain          :string(255)      default("nanyazq.com"), not null
+#  domain          :string(255)
 #  email           :string(255)      not null
 #  password_digest :string(255)      not null
 #  role            :string(255)      default("member"), not null
@@ -15,13 +15,15 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  username        :string(255)
-#  master_id       :bigint(8)
 #  type            :string(255)
+#  enabled         :boolean          default(FALSE), not null
+#  secret          :string(255)
 #
 
 class User < ApplicationRecord
-  ROLES = %w[admin accountant compliance member master bot].freeze
+  ROLES = %w[admin accountant compliance member master bot agent].freeze
   before_validation :assign_uid
+  before_validation :downcase_email
   validates :email, email: true, presence: true, uniqueness: true
   validates :uid, presence: true, uniqueness: true
   validates :password, presence: true, length: { minimum: 6 }, on: :create
@@ -38,15 +40,19 @@ class User < ApplicationRecord
   has_many :accounts, foreign_key: :member_id,
                       inverse_of: :member,
                       dependent: :restrict_with_error
-  has_many :members, foreign_key: 'master_id',
+  has_many :members, foreign_key: 'domain',
                      class_name: 'Member',
+                     primary_key: 'uid',
                      dependent: :restrict_with_error,
                      inverse_of: :master
-  has_many :bots, foreign_key: 'master_id',
+  has_many :bots, foreign_key: 'domain',
                   class_name: 'Bot',
+                  primary_key: 'uid',
                   dependent: :restrict_with_error,
                   inverse_of: :master
-  has_many :subs, foreign_key: 'master_id', class_name: 'User'
+  has_many :subs, foreign_key: 'domain',
+                  class_name: 'User',
+                  primary_key: 'uid'
   belongs_to :referrer, class_name: 'User', optional: true,
                         foreign_key: 'referral_id', inverse_of: :referees
   has_many :referees, class_name: 'User', foreign_key: 'referral_id',
@@ -55,6 +61,11 @@ class User < ApplicationRecord
   after_create :after_confirmation
   after_create :touch_positions
   after_create :touch_accounts
+
+  def verify_sign!(str, sign)
+    verified = OpenSSL::HMAC.hexdigest('SHA256', secret, str) == sign
+    raise StandardError, 'sign is not correct' unless verified
+  end
 
   def active?
     state == 'active'
@@ -68,18 +79,8 @@ class User < ApplicationRecord
     self
   end
 
-  def poor_bot
-    bots.joins(:accounts)
-        .group('users.id')
-        .order('SUM(accounts.balance) ASC')
-        .first
-  end
-
-  def rich_bot
-    bots.joins(:accounts)
-        .group('users.id')
-        .order('SUM(accounts.balance) DESC')
-        .first
+  def status
+    nil
   end
 
   def should_validate?
@@ -178,6 +179,10 @@ class User < ApplicationRecord
   end
 
   private
+
+  def downcase_email
+    self.email = email.try(:downcase)
+  end
 
   def assign_uid
     return if uid.present?

@@ -15,3 +15,5 @@ Style/FrozenStringLiteralComment:
   Enabled: false
 Style/Documentation:
   Enabled: false
+Layout/EndOfLine:
+  Enabled: false

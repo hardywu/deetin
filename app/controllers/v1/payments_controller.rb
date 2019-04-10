@@ -59,7 +59,11 @@ class V1::PaymentsController < V1::ApplicationController
 
   def override_opts
     {
-      user_id: current_user.role == 'master' ? user_id : current_user.id
+      user_id: if %w[master agent].include?(current_user.role)
+                 user_id
+               else
+                 current_user.id
+               end
     }.compact
   end
 
@@ -69,6 +73,6 @@ class V1::PaymentsController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def payment_params
-    attributes.permit(:type, :name, :no, :desc)
+    attributes.permit(%i[type name no desc appid pubkey secret enabled])
   end
 end

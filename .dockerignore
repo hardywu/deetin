@@ -3,3 +3,4 @@ log/*.log
 tmp/cache
 .gitignore
 .robocop.yml
+config/master.key
