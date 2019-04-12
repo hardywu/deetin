@@ -4,16 +4,9 @@
 # model remove the {} from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-one:
-  id: 1
-  code: BTCUSD
-  base_unit: btc
-  quote_unit: usd
+BTC:
+  id: BTC_USD
   name: BTC/USD
 
 GX:
-  id: 2
-  code: GX_CNY
-  base_unit: GX
-  quote_unit: CNY
-  name: BTC/USD
+  id: GX/CNY

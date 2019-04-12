@@ -24,7 +24,9 @@ class Order < ApplicationRecord
   belongs_to :market, required: true
   belongs_to :user, required: true
   enum state: %i[waiting done cancelled passive]
+  ZERO = 0.to_d
   before_validation :set_attrs
+  before_update { |order| order.state = 'done' if order.volume == ZERO }
   validates :price, :volume, numericality: { greater_than_or_equal_to: 0.to_d }
 
   delegate :lock_funds!, to: :hold_account!
@@ -38,7 +40,8 @@ class Order < ApplicationRecord
 
   # @deprecated
   def hold_account!
-    Account.lock.find_by!(member_id: user.master&.id || user_id, currency_id: base)
+    Account.lock.find_or_create_by! member_id: user.master&.id || user_id,
+                                    currency_id: base
   end
 
   def fix_number_precision
@@ -60,8 +63,8 @@ class Order < ApplicationRecord
   end
 
   def set_attrs
-    self.base = market.base_unit
-    self.quote = market.quote_unit
+    self.base = Market.id_to_base(market_id)
+    self.quote = Market.id_to_quote(market_id)
     fix_number_precision
   end
 end

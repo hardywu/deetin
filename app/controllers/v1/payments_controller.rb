@@ -73,6 +73,6 @@ class V1::PaymentsController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def payment_params
-    attributes.permit(%i[type name no desc appid pubkey secret enabled])
+    attributes.permit(%i[type name no desc appid pubkey secret])
   end
 end

@@ -8,7 +8,7 @@ admin:
   id: 1
   email: admin@barong.io
   password_digest: <%= BCrypt::Password.create('123456') %>
-  domain: nanyazq.com
+  domain:
   role: admin
   state: active
   level: 3
@@ -18,7 +18,7 @@ member:
   id: 2
   email: john@barong.io
   password_digest: <%= BCrypt::Password.create('123456') %>
-  domain: nanyazq.com
+  domain:
   role: member
   state: active
   level: 2
@@ -26,9 +26,10 @@ member:
 
 master:
   id: 3
-  email: john@deetin.io
+  email: johnmas@deetin.io
   password_digest: <%= BCrypt::Password.create('123456') %>
-  domain: nanyazq.com
+  domain:
+  secret: 9sdj0hf8snl23mm9k
   role: master
   state: active
   level: 2
@@ -39,21 +40,30 @@ bot:
   type: Bot
   email: bot@deetin.io
   password_digest: <%= BCrypt::Password.create('123456') %>
-  domain: nanyazq.com
+  domain: 213214991
   role: member
   state: active
-  master_id: 3
   level: 0
   uid: 0000001
+  enabled: true
 
 subaccount:
   id: 5
   type: Member
   email: member@deetin.io
   password_digest: <%= BCrypt::Password.create('123456') %>
-  domain: nanyazq.com
+  domain: 213214311
   role: member
   state: active
-  master_id: 3
   level: 0
   uid: 0000002
+
+agent:
+  id: 6
+  email: agent@deetin.io
+  password_digest: <%= BCrypt::Password.create('123456') %>
+  domain:
+  role: agent
+  state: active
+  level: 2
+  uid: 213214991

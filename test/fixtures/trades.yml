@@ -8,7 +8,7 @@ one:
   trend: 1
   price: 100
   volume: 2
-  market_id: 2
+  market_id: GX/CNY
   ask_id: 4
   bid_id: 5
   ask_member_id: 2
@@ -19,9 +19,25 @@ two:
   trend: 1
   price: 100
   volume: 2
-  market_id: 2
+  market_id: GX/CNY
   ask_id: 4
   bid_id: 5
   ask_member_id: 1
   bid_member_id: 2
   funds: 200
+
+quick_trade:
+  id: 999
+  master_id: 3
+  trend: 1
+  price: 0.1
+  volume: 100
+  funds: 10
+  market_id: GX/CNY
+  ask_id: 4
+  bid_id: 3
+  bid_member_id: 5
+  ask_member_id: 4
+  state: waiting
+  'no': j988k94m
+  callback_url: 'https://api.nu0.one/callback'

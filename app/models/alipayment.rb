@@ -20,13 +20,7 @@
 
 ALIPAY_API_URL = 'https://openapi.alipaydev.com/gateway.do'.freeze
 
-class Alipay < Payment
-  scope :enabled, -> { where(enabled: true) }
-
-  def self.find_least_sales
-    enabled.order(today_sales: :desc).first
-  end
-
+class Alipayment < Payment
   def client
     @client ||= Alipay::Client.new url: ALIPAY_API_URL,
                                    app_id: appid,

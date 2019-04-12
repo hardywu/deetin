@@ -23,7 +23,7 @@
 class Trade < ApplicationRecord
   include BelongsToMarket
   ZERO = '0.0'.to_d
-  attr_accessible :subject, :charge_url
+  attr_accessor :side, :subject, :charge_url
   enum state: %i[done waiting cancelled]
   enum trend: { up: 1, down: 0 }
   scope :h24, -> { where('created_at > ?', 24.hours.ago) }
@@ -32,15 +32,24 @@ class Trade < ApplicationRecord
   before_validation :set_extra_attrs
 
   belongs_to :market
-  belongs_to :master, class_name: 'User'
+  belongs_to :master, class_name: 'User', optional: true
   belongs_to :ask, class_name: 'Ask', foreign_key: :ask_id
   belongs_to :bid, class_name: 'Bid', foreign_key: :bid_id
-  belongs_to :ask_member, class_name: 'User',
-                          foreign_key: :ask_member_id
-  belongs_to :bid_member, class_name: 'User',
-                          foreign_key: :bid_member_id
-  delegate :base_unit, to: :market
-  delegate :quote_unit, to: :market
+  belongs_to :ask_member, class_name: 'User', foreign_key: :ask_member_id
+  belongs_to :bid_member, class_name: 'User', foreign_key: :bid_member_id
+
+  def generate_no
+    self.no = Nanoid.generate
+    self
+  end
+
+  def base_unit
+    Market.id_to_base(market_id)
+  end
+
+  def quote_unit
+    Market.id_to_quote(market_id)
+  end
 
   def ask_alipay
     ask_member&.alipay
@@ -51,12 +60,16 @@ class Trade < ApplicationRecord
   end
 
   def create_charge_url
-    response = bid_member.alipay_client.execute(
+    response = ask_member.alipay_client.execute(
       method: 'alipay.trade.precreate',
       notify_url: Config['alipay_notify_url'].value,
       biz_content: biz_content
     )
-    JSON.parse(response)['alipay_trade_precreate_response']['qr_code']
+    res = JSON.parse(response)['alipay_trade_precreate_response']
+    raise StandardError, 'alipay charge failed' unless res['code'] == '10000'
+
+    self.charge_url = res['qr_code']
+    self
   end
 
   def biz_content
@@ -66,12 +79,14 @@ class Trade < ApplicationRecord
   end
 
   def quick_record!
+    raise StandardError, 'no bid_member' unless bid_member_id
+
     ActiveRecord::Base.transaction do
       params = slice(%i[price volume market_id state]).symbolize_keys
       self.ask = Ask.create! user: ask_member, **params
       self.bid = Bid.create! user: bid_member, **params
       save!
-      settle_funds!
+      ask.lock_funds!(volume)
     end
   end
 
@@ -79,7 +94,6 @@ class Trade < ApplicationRecord
     ask.unlock_and_sub_funds!(volume)
     ask.volume -= volume
     ask.funds_received += funds
-    ask.state = 'done' if ask.volume == ZERO
     ask.save!
   end
 
@@ -87,7 +101,6 @@ class Trade < ApplicationRecord
     bid.plus_funds!(volume)
     bid.volume -= volume
     bid.funds_received += funds
-    bid.state = 'done' if bid.volume == ZERO
     bid.save!
   end
 
@@ -99,21 +112,10 @@ class Trade < ApplicationRecord
     end
   end
 
-  def settle_funds!
-    if state == 'done'
-      ask.sub_funds!(volume).update! state: 'done'
-      bid.plus_funds!(volume).update! state: 'done'
-    else
-      ask.lock_funds!(volume)
-    end
-  end
-
-  attr_accessor :side
-
   def set_extra_attrs
-    assign_attributes no: Nanoid.generate, trend: 'up', funds: price * volume,
-                      bid_member: bid.user, ask_member: ask.user,
-                      master: ask.user.master
+    assign_attributes trend: 'up'
+    self.bid_member_id ||= bid.user_id
+    self.ask_member_id ||= ask.user_id
   end
 
   class << self

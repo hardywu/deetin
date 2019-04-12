@@ -11,9 +11,10 @@ Rails.application.routes.draw do
     root to: 'application#root'
     resources :markets, only: %i[index show]
     resources :orders, except: :destroy
-    resources :trades, except: :destroy do
+    resources :trades, except: %i[update destroy] do
       collection do
         post 'quick_bid'
+        post 'quick_done'
       end
       member do
         patch 'await'

@@ -21,6 +21,7 @@
 #
 
 class Bot < User
+  scope :enabled, -> { where enabled: true }
   belongs_to :master, class_name: 'User',
                       primary_key: 'uid',
                       foreign_key: :domain
@@ -43,12 +44,12 @@ class Bot < User
     Rails.cache.write("bot_sales/#{id}", sales + sale)
   end
 
-  def self.find_least_sales
+  def self.find_least_sales_id!
     keys = Bot.enabled.ids.map { |x| "bot_sales/#{x}" }
     all_sales = Rails.cache.fetch_multi(*keys) { 0 }
     min_sales = all_sales.min_by { |_, v| v }
-    return unless min_sales
+    raise StandardError, 'Not Bot available' unless min_sales
 
-    find min_sales[0].split('/')[1]
+    min_sales[0].split('/')[1]
   end
 end

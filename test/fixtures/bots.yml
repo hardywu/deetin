@@ -4,11 +4,3 @@
 # model remove the '{}' from the fixture names and add the columns immediately
 # below each fixture, per the syntax in the comments below
 #
-futures_one:
-  type: FuturesMarket
-  id: CMG_CA0
-  name: 美国黄金现货1
-
-#
-# two: {}
-# column: value

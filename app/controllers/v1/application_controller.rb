@@ -2,7 +2,7 @@ class V1::ApplicationController < ActionController::API
   include Pundit
   include V1::Concerns::Auth
   include V1::Concerns::Constants
-  # rescue_from StandardError, with: :invalid_param
+  rescue_from StandardError, with: :invalid_param
   rescue_from Pundit::NotAuthorizedError, with: :not_authorized
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from AuthorizeFailed, with: :not_authorized
@@ -42,7 +42,8 @@ class V1::ApplicationController < ActionController::API
     {
       errors: [
         code: code,
-        detail: err.message
+        detail: err.message,
+        trace: err.backtrace[0, 9]
       ]
     }
   end
@@ -65,5 +66,9 @@ class V1::ApplicationController < ActionController::API
 
   def relationships
     params.fetch(:data, {}).fetch(:relationships, {})
+  end
+
+  def relation_id(assoc)
+    relationships.fetch(assoc, {}).fetch(:data, {}).fetch(:id)
   end
 end

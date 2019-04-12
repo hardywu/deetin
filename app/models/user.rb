@@ -36,7 +36,7 @@ class User < ApplicationRecord
   has_many :orders, dependent: :restrict_with_error
   has_many :positions, dependent: :restrict_with_error
   has_many :payments, dependent: :restrict_with_error
-  has_one :alipay, dependent: :restrict_with_error
+  has_one :alipay, dependent: :restrict_with_error, class_name: 'Alipayment'
   has_many :accounts, foreign_key: :member_id,
                       inverse_of: :member,
                       dependent: :restrict_with_error
@@ -63,8 +63,12 @@ class User < ApplicationRecord
   after_create :touch_accounts
 
   def verify_sign!(str, sign)
-    verified = OpenSSL::HMAC.hexdigest('SHA256', secret, str) == sign
-    raise StandardError, 'sign is not correct' unless verified
+    raise StandardError, 'account not approved for signature' if secret.blank?
+    raise StandardError, 'sign is not correct' unless encript_sign(str) == sign
+  end
+
+  def encript_sign(str)
+    OpenSSL::HMAC.hexdigest 'SHA256', secret, str
   end
 
   def active?

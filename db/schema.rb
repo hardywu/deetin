@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_09_150104) do
+ActiveRecord::Schema.define(version: 2019_04_12_035801) do
 
   create_table "accounts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "member_id", null: false
@@ -142,8 +142,8 @@ ActiveRecord::Schema.define(version: 2019_04_09_150104) do
     t.decimal "daily_limit", precision: 32, scale: 2, default: "50000.0"
     t.decimal "monthly_limit", precision: 32, scale: 2, default: "1550000.0"
     t.string "appid"
-    t.string "pubkey"
-    t.string "secret"
+    t.text "pubkey"
+    t.text "secret"
     t.index ["user_id", "type"], name: "index_payments_on_user_id_and_type", unique: true
     t.index ["user_id"], name: "index_payments_on_user_id"
   end

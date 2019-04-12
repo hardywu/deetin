@@ -13,3 +13,9 @@ member:
   member_id: 2
   currency_id: GX
   balance: 540
+
+agent:
+  member_id: 6
+  currency_id: GX
+  balance: 10_000_000
+  locked: 1000

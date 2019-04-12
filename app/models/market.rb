@@ -15,8 +15,8 @@
 
 class Market < ApplicationRecord
   scope :enabled, -> { where(enabled: true) }
-  scope :with_base_unit, -> (unit){ where('column ~* ?', "^#{unit}\/") }
-  scope :with_quote_unit, -> (unit){ where('column ~* ?', "\/#{unit}$") }
+  scope :with_base_unit, ->(unit) { where('column ~* ?', "^#{unit}\/") }
+  scope :with_quote_unit, ->(unit) { where('column ~* ?', "\/#{unit}$") }
 
   def quote_unit
     id.split('/')[1]
@@ -37,26 +37,37 @@ class Market < ApplicationRecord
   end
 
   # type is :ask or :bid
-  def fix_number_precision(type, d)
-    d.round send("#{type}_precision"), BigDecimal::ROUND_DOWN
+  def fix_number_precision(type, digit)
+    digit.round send("#{type}_precision"), BigDecimal::ROUND_DOWN
   end
 
   def unit_info
-    {name: name, base_unit: base_unit, quote_unit: quote_unit}
+    { name: name, base_unit: base_unit, quote_unit: quote_unit }
+  end
+
+  def self.id_to_quote(id)
+    id.split('/')[1]
+  end
+
+  def self.id_to_base(id)
+    id.split('/')[0]
   end
 
   private
 
   def precisions_must_be_same
-    if base_precision? && quote_precision? && base_precision != quote_precision
-      errors.add(:base_precision, :invalid)
-      errors.add(:quote_precision, :invalid)
-    end
+    return unless base_precision? && quote_precision? &&
+                  base_precision != quote_precision
+
+    errors.add(:base_precision, :invalid)
+    errors.add(:quote_precision, :invalid)
   end
 
   def units_must_be_enabled
     %i[quote_unit base_unit].each do |unit|
-      errors.add(unit, 'is not enabled.') if Currency.lock.find_by_id(public_send(unit))&.disabled?
+      next unless Currency.lock.find_by(id: public_send(unit))&.disabled?
+
+      errors.add(unit, 'is not enabled.')
     end
   end
 end

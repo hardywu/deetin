@@ -5,6 +5,7 @@
 # below each fixture, per the syntax in the comments below
 # # #
 bid:
+  id: 1
   type: Bid
   base: GX
   quote: CNY
@@ -17,6 +18,7 @@ bid:
   user_id: 4
 
 ask:
+  id: 2
   type: Ask
   base: GX
   quote: CNY
@@ -26,3 +28,30 @@ ask:
   origin_volume: 10
   state: active
   user_id: 3
+
+quick_bid:
+  id: 3
+  type: Bid
+  base: GX
+  quote: CNY
+  ord_type: limit
+  market_id: GX/CNY
+  price: 0.1
+  volume: 100
+  funds_received: 0
+  origin_volume: 100
+  state: active
+  user_id: 5
+
+quick_ask:
+  id: 4
+  type: Ask
+  base: GX
+  quote: CNY
+  market_id: GX/CNY
+  price: 0.1
+  volume: 100
+  funds_received: 0
+  origin_volume: 100
+  state: active
+  user_id: 4
