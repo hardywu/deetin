@@ -45,3 +45,6 @@ Market.create \
   base_unit: 'GX',
   quote_unit: 'CNY',
   name: 'GX CNY market'
+
+Config.new name: 'ALIPAY_API_URL', value: 'https://openapi.alipaydev.com/gateway.do'
+

@@ -18,7 +18,7 @@
 #  secret        :string(255)
 #
 
-class PaymentSerializer
+class AlipaySerializer
   include FastJsonapi::ObjectSerializer
   set_key_transform :camel_lower
   attributes :name, :no, :desc, :type, :appid, :pubkey,

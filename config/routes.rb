@@ -12,25 +12,19 @@ Rails.application.routes.draw do
     resources :markets, only: %i[index show]
     resources :orders, except: :destroy
     resources :trades, except: %i[update destroy] do
-      collection do
-        post 'quick_bid'
-        post 'quick_done'
-      end
       member do
         patch 'await'
         patch 'done'
       end
     end
+    post 'quick_bid', to: 'quick_trades#bid'
+    post 'quick_done', to: 'quick_trades#done'
     resources :accounts, only: %i[index show]
     resources :transfers, except: %i[update destroy]
     resources :documents
     resources :phones
     resources :profiles
-    resources :users do
-      member do
-        post 'listen'
-      end
-    end
+    resources :users
     resources :payments
     resources :positions, only: %i[index]
     post 'auth/signup', to: 'auth#signup'

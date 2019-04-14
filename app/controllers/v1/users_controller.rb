@@ -12,7 +12,7 @@ class V1::UsersController < V1::ApplicationController
 
   # GET /users/1
   def show
-    render json: serialize(@user)
+    render json: serialize(@user, include: [:alipay])
   end
 
   # POST /users
@@ -39,17 +39,6 @@ class V1::UsersController < V1::ApplicationController
   # DELETE /users/1
   def destroy
     @user.destroy!
-  end
-
-  def listen
-    status = Rails.cache.read("bot_status/#{params[:id]}")
-    if status.nil?
-      Rails.cache.write("bot_status/#{params[:id]}", 0, expires_in: 1.minute)
-      ListenAlipayJob.perform_later(params[:id], params[:cookie])
-      render json: { status: status, msg: 'pendding' }
-    else
-      render json: { status: status, msg: 'already working' }
-    end
   end
 
   private
@@ -81,7 +70,7 @@ class V1::UsersController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    attributes.permit(:email, :username)
+    attributes.permit(:email, :username, :enabled)
   end
 
   def default_params

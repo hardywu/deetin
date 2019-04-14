@@ -39,7 +39,7 @@ class Trade < ApplicationRecord
   belongs_to :bid_member, class_name: 'User', foreign_key: :bid_member_id
 
   def generate_no
-    self.no = Nanoid.generate
+    self.no = Nanoid.generate alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     self
   end
 
@@ -64,9 +64,9 @@ class Trade < ApplicationRecord
       method: 'alipay.trade.precreate',
       notify_url: Config['alipay_notify_url'].value,
       biz_content: biz_content
-    )
+    ).encode('utf-8', 'gbk')
     res = JSON.parse(response)['alipay_trade_precreate_response']
-    raise StandardError, 'alipay charge failed' unless res['code'] == '10000'
+    raise StandardError, res.to_s unless res['code'] == '10000'
 
     self.charge_url = res['qr_code']
     self
@@ -74,7 +74,8 @@ class Trade < ApplicationRecord
 
   def biz_content
     JSON.generate({ out_trade_no: no,
-                    total_amount: funds.to_s,
+                    timeout_express: '10m',
+                    total_amount: funds.round(2).to_s,
                     subject: subject }, ascii_only: true)
   end
 

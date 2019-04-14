@@ -18,13 +18,17 @@
 #  secret        :string(255)
 #
 
-ALIPAY_API_URL = 'https://openapi.alipaydev.com/gateway.do'.freeze
-
 class Alipayment < Payment
+  before_create :generate_rsa
   def client
-    @client ||= Alipay::Client.new url: ALIPAY_API_URL,
+    @client ||= Alipay::Client.new url: Config['ALIPAY_API_URL'].value,
                                    app_id: appid,
                                    app_private_key: secret,
                                    alipay_public_key: pubkey
+  end
+
+  def generate_rsa
+    rsa_key = OpenSSL::PKey::RSA.new(2048)
+    assign_attributes pubkey: rsa_key.public_key.to_pem, secret: rsa_key.to_pem
   end
 end

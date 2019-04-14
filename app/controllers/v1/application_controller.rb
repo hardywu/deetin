@@ -40,11 +40,11 @@ class V1::ApplicationController < ActionController::API
 
   def serialize_error(err, code)
     {
-      errors: [
+      errors: {
         code: code,
         detail: err.message,
-        trace: err.backtrace[0, 9]
-      ]
+        trace: (err.backtrace[0, 9] if Rails.env != 'production')
+      }
     }
   end
 

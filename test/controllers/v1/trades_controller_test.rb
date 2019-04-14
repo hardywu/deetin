@@ -58,7 +58,7 @@ class V1::TradesControllerTest < ActionDispatch::IntegrationTest
 
   test 'should not create quick trade without approved secret' do
     assert_difference('Trade.count', 0) do
-      post quick_bid_v1_trades_url, params: quick_params(@user)
+      post v1_quick_bid_url, params: quick_params(@user)
       assert_response :unprocessable_entity
     end
   end
@@ -67,7 +67,7 @@ class V1::TradesControllerTest < ActionDispatch::IntegrationTest
     params = quick_params(@master)
     params['sign'] = @master.encript_sign params.to_query
     assert_difference('Trade.count') do
-      post quick_bid_v1_trades_url, params: params
+      post v1_quick_bid_url, params: params
       assert_includes @response.body, 'chargeUrl'
       assert_includes @response.body, 'no'
       assert_response :success
