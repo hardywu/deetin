@@ -14,8 +14,8 @@
 #  daily_limit   :decimal(32, 2)   default(50000.0)
 #  monthly_limit :decimal(32, 2)   default(1550000.0)
 #  appid         :string(255)
-#  pubkey        :string(255)
-#  secret        :string(255)
+#  pubkey        :text(65535)
+#  secret        :text(65535)
 #
 
 class Alipayment < Payment

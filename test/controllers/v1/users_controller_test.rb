@@ -4,7 +4,6 @@ class V1::UsersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:master)
     @token_head = { 'Authorization' => "Bearer #{@user.jwt}" }
-    @market = markets(:one)
   end
 
   test 'should get index' do

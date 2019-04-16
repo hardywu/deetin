@@ -4,7 +4,7 @@ class V1::Admin::MarketsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:admin)
     @token_head = { 'Authorization' => "Bearer #{@user.jwt}" }
-    @market = markets(:one)
+    @market = markets(:BTC)
   end
 
   test 'should update market' do

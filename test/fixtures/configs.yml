@@ -1,0 +1,8 @@
+
+alipay_notify_url:
+  id: alipay_notify_url
+  value: http://localhost:4000/v1/quick_done
+
+ALIPAY_API_URL:
+  id: ALIPAY_API_URL
+  value: https://openapi.alipaydev.com/gateway.do
