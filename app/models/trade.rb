@@ -39,7 +39,8 @@ class Trade < ApplicationRecord
   belongs_to :bid_member, class_name: 'User', foreign_key: :bid_member_id
 
   def generate_no
-    self.no = Nanoid.generate alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    self.no = Nanoid.generate alphabet: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                              size: 32
     self
   end
 
