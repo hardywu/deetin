@@ -6,7 +6,9 @@ class V1::UsersController < V1::ApplicationController
   # GET /users
   def index
     options = {}
-    options[:meta] = { total: @users.total_count }
+    options[:meta] = { total: @users.total_count,
+                       page: @users.current_page,
+                       size: @users.size }
     render json: serialize(@users, options)
   end
 

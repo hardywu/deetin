@@ -51,12 +51,12 @@ class Trade < ApplicationRecord
     Market.id_to_quote(market_id)
   end
 
-  def ask_alipay
-    ask_member&.alipay
+  def ask_username
+    ask_member&.username
   end
 
-  def bid_alipay
-    bid_member&.alipay
+  def bid_username
+    bid_member&.username
   end
 
   def create_charge_url

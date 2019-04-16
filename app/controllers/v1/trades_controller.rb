@@ -7,8 +7,9 @@ class V1::TradesController < V1::ApplicationController
                   .order(params[:order_by])
                   .page(params[:page])
                   .per(params[:limit])
-
-    render json: serialize(trades)
+    options = { meta: { total: trades.total_count, page: trades.current_page,
+                        size: trades.size } }
+    render json: serialize(trades, options)
   end
 
   def show

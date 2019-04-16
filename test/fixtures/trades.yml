@@ -40,4 +40,4 @@ quick_trade:
   ask_member_id: 4
   state: waiting
   'no': j988k94m
-  callback_url: 'https://api.nu0.one/callback'
+  callback_url: 'https://api.nu0.one/v1/quick_done'

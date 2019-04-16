@@ -11,6 +11,7 @@ class V1::QuickTradesController < V1::ApplicationController
   def done
     @trade = Trade.find_by! no: params[:out_trade_no]
     @trade.done_record!
+    @trade.ask_member.add_sale @trade.funds
     Net::HTTP.post URI(@trade.callback_url),
                    quick_req(@trade).to_json,
                    'Content-Type' => 'application/json'

@@ -28,6 +28,11 @@ class UserSerializer
   attribute :jwt, if: proc { |_record, params|
     params[:jwt]
   }
+
+  attribute :sales, if: proc { |record|
+    record.type == 'Bot'
+  }
+
   attribute :alipay_no do |object|
     object.alipay&.no
   end

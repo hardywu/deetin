@@ -2,13 +2,14 @@ require 'test_helper'
 
 class V1::QuickTradesControllerTest < ActionDispatch::IntegrationTest
   setup do
+    Rails.cache.clear
     @user = users(:member)
     @master = users(:master)
     @market = markets(:GX)
     @bid = orders(:bid)
     @ask = orders(:ask)
     @token_head = { 'Authorization' => "Bearer #{@user.jwt}" }
-    body = <<-RES
+    @body = <<-RES
       {
         "sign":"ERITJKEIJKJHKKKKKKKHJEREEEEEEEEEEE",
         "alipay_trade_precreate_response":{
@@ -18,11 +19,6 @@ class V1::QuickTradesControllerTest < ActionDispatch::IntegrationTest
         }
       }
     RES
-
-    stub_request(:post, 'https://openapi.alipaydev.com/gateway.do')
-      .to_return(body: body)
-
-    stub_request(:post, 'https://api.nu0.one/callback').to_return(body: body)
   end
 
   def attrs_formt(attrs:, rela: nil)
@@ -39,6 +35,9 @@ class V1::QuickTradesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should not create quick trade without approved secret' do
+    stub_request(:post, 'https://openapi.alipaydev.com/gateway.do')
+      .to_return(body: @body)
+
     assert_difference('Trade.count', 0) do
       post v1_quick_bid_url, params: quick_params(@user)
       assert_response :unprocessable_entity
@@ -46,6 +45,9 @@ class V1::QuickTradesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should create quick trade sign uid/sign' do
+    stub_request(:post, 'https://openapi.alipaydev.com/gateway.do')
+      .to_return(body: @body)
+
     params = quick_params(@master)
     params['sign'] = @master.encript_sign params.to_query
     assert_difference('Trade.count') do
@@ -59,8 +61,11 @@ class V1::QuickTradesControllerTest < ActionDispatch::IntegrationTest
   test 'should done quick trade by alipay notify' do
     @trade = trades(:quick_trade)
     body = { out_trade_no: @trade.no }
-    assert_changes -> { @trade.state }, from: 'waiting', to: 'done' do
+    assert_equal 'Bot', @trade.ask_member.type
+    assert_changes -> { @trade.state + @trade.ask_member.sales.to_s },
+                   from: 'waiting0', to: 'done10.0' do
       post v1_quick_done_url, params: body
+      assert_equal @trade.funds.to_s, @trade.ask_member.sales.to_s
       assert_response :success
       @trade.reload
     end
