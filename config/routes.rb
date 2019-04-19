@@ -18,6 +18,7 @@ Rails.application.routes.draw do
       end
     end
     post 'quick_bid', to: 'quick_trades#bid'
+    post 'quick_demo', to: 'quick_trades#demo'
     post 'quick_done', to: 'quick_trades#done'
     resources :accounts, only: %i[index show]
     resources :transfers, except: %i[update destroy]

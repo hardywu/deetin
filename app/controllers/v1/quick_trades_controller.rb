@@ -17,6 +17,15 @@ class V1::QuickTradesController < V1::ApplicationController
                    'Content-Type' => 'application/json'
   end
 
+  def demo
+    @trade = Trade.new ask_member_id: Bot.find_least_sales_id!,
+                       funds: params[:funds],
+                       subject: '体验'
+
+    @trade.generate_no.create_charge_url
+    render json: quick_resp(@trade), status: :created
+  end
+
   private
 
   def serialize(*args)

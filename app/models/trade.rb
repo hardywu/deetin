@@ -76,6 +76,7 @@ class Trade < ApplicationRecord
   def biz_content
     JSON.generate({ out_trade_no: no,
                     timeout_express: '10m',
+                    disable_pay_channels: 'credit_group,promotion',
                     total_amount: funds.round(2).to_s,
                     subject: subject }, ascii_only: true)
   end
