@@ -24,7 +24,7 @@ class TradeSerializer
   include FastJsonapi::ObjectSerializer
   set_key_transform :camel_lower
   attributes :price, :volume, :market_id, :state, :funds, :no, :charge_url,
-             :base_unit, :quote_unit, :ask_username, :bid_username
+             :base_unit, :quote_unit, :ask_username, :bid_username, :created_at
   belongs_to :market
   belongs_to :ask, record_type: :order, serializer: OrderSerializer
   belongs_to :bid, record_type: :order, serializer: OrderSerializer

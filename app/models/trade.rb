@@ -21,6 +21,7 @@
 #
 
 class Trade < ApplicationRecord
+  default_scope { order('created_at DESC') }
   include BelongsToMarket
   ZERO = '0.0'.to_d
   attr_accessor :side, :subject, :charge_url

@@ -21,8 +21,9 @@
 #
 
 class Order < ApplicationRecord
-  belongs_to :market, required: true
-  belongs_to :user, required: true
+  default_scope { order('created_at DESC') }
+  belongs_to :market
+  belongs_to :user
   enum state: %i[waiting done cancelled passive]
   ZERO = 0.to_d
   before_validation :set_attrs
