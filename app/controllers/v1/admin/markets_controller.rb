@@ -40,10 +40,6 @@ class V1::Admin::MarketsController < V1::Admin::ApplicationController
     @market = Market.find params[:id]
   end
 
-  def serialize(market)
-    MarketSerializer.new(market).serialized_json
-  end
-
   def market_params
     attributes.permit :base_unit,
                       :quote_unit,

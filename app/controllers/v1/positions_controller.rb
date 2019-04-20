@@ -13,8 +13,4 @@ class V1::PositionsController < V1::ApplicationController
   def set_position
     @position = Position.find params[:id]
   end
-
-  def serialize(position)
-    PositionSerializer.new(position).serialized_json
-  end
 end

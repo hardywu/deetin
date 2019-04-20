@@ -5,11 +5,7 @@ class V1::UsersController < V1::ApplicationController
 
   # GET /users
   def index
-    options = {}
-    options[:meta] = { total: @users.total_count,
-                       page: @users.current_page,
-                       size: @users.size }
-    render json: serialize(@users, options)
+    render json: serialize(@users)
   end
 
   # GET /users/1
@@ -44,10 +40,6 @@ class V1::UsersController < V1::ApplicationController
   end
 
   private
-
-  def serialize(*args)
-    UserSerializer.new(*args).serialized_json
-  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_user

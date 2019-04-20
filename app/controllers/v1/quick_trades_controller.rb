@@ -28,10 +28,6 @@ class V1::QuickTradesController < V1::ApplicationController
 
   private
 
-  def serialize(*args)
-    TradeSerializer.new(*args).serialized_json
-  end
-
   def bidder
     master.verify_sign!(params_str_to_sign, params[:sign])
     master.members.find_or_create_by! email: params[:email]

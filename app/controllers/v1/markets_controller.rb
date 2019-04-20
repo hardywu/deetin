@@ -17,8 +17,4 @@ class V1::MarketsController < V1::ApplicationController
   def set_market
     @market = Market.find params[:id]
   end
-
-  def serialize(market)
-    MarketSerializer.new(market).serialized_json
-  end
 end

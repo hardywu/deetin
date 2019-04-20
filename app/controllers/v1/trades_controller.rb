@@ -7,9 +7,7 @@ class V1::TradesController < V1::ApplicationController
                   .order(params[:order_by])
                   .page(params[:page])
                   .per(params[:limit])
-    options = { meta: { total: trades.total_count, page: trades.current_page,
-                        size: trades.size } }
-    render json: serialize(trades, options)
+    render json: serialize(trades)
   end
 
   def show
@@ -44,10 +42,6 @@ class V1::TradesController < V1::ApplicationController
 
   def set_trade
     @trade = Trade.find params[:id]
-  end
-
-  def serialize(*args)
-    TradeSerializer.new(*args).serialized_json
   end
 
   # Only allow a trusted parameter "white list" through.

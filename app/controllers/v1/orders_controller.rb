@@ -40,10 +40,6 @@ class V1::OrdersController < V1::ApplicationController
     @order = Order.find params[:id]
   end
 
-  def serialize(*args)
-    OrderSerializer.new(*args).serialized_json
-  end
-
   def klass
     case params.fetch(:data, {}).fetch(:type)
     when 'bid'

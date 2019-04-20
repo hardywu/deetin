@@ -43,10 +43,6 @@ class V1::Admin::PaymentsController < V1::Admin::ApplicationController
 
   private
 
-  def serialize(payment)
-    PaymentSerializer.new(payment).serialized_json
-  end
-
   # Use callbacks to share common setup or constraints between actions.
   def set_payment
     @payment = Payment.find(params[:id])
