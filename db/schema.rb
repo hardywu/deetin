@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_12_035801) do
+ActiveRecord::Schema.define(version: 2019_05_15_220516) do
 
   create_table "accounts", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.integer "member_id", null: false
@@ -237,8 +237,12 @@ ActiveRecord::Schema.define(version: 2019_04_12_035801) do
     t.string "type"
     t.boolean "enabled", default: false, null: false
     t.string "secret"
+    t.string "payment_type"
+    t.bigint "payment_id"
+    t.string "device_id"
     t.index ["domain", "email"], name: "index_users_on_email", unique: true
     t.index ["enabled"], name: "index_users_on_enabled"
+    t.index ["payment_type", "payment_id"], name: "index_users_on_payment_type_and_payment_id"
     t.index ["uid"], name: "index_users_on_uid", unique: true
     t.index ["username"], name: "index_users_on_username"
   end

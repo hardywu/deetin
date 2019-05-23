@@ -18,6 +18,9 @@
 #  type            :string(255)
 #  enabled         :boolean          default(FALSE), not null
 #  secret          :string(255)
+#  payment_type    :string(255)
+#  payment_id      :bigint(8)
+#  device_id       :string(255)
 #
 
 class Member < User

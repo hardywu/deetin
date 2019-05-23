@@ -18,6 +18,9 @@
 #  type            :string(255)
 #  enabled         :boolean          default(FALSE), not null
 #  secret          :string(255)
+#  payment_type    :string(255)
+#  payment_id      :bigint(8)
+#  device_id       :string(255)
 #
 
 class Bot < User
@@ -26,7 +29,7 @@ class Bot < User
                       primary_key: 'uid',
                       foreign_key: :domain
   before_validation :set_attrs
-  delegate :client, to: :alipay, prefix: true
+  delegate :client, to: :payment, prefix: true
 
   def sales
     Rails.cache.fetch("bot_sales/#{id}", expires_in: 24.hours) { 0 }
@@ -44,12 +47,13 @@ class Bot < User
     Rails.cache.write("bot_sales/#{id}", sales + sale)
   end
 
-  def self.find_least_sales_id!
-    keys = Bot.enabled.ids.map { |x| "bot_sales/#{x}" }
+  def self.find_least_sales!(pay_type)
+    bots = pay_type == 'unionpay' ? Bot.use_union : Bot.use_alipay
+    keys = bots.enabled.ids.map { |x| "bot_sales/#{x}" }
     all_sales = Rails.cache.fetch_multi(*keys) { 0 }
     min_sales = all_sales.min_by { |_, v| v }
     raise StandardError, 'Not Bot available' unless min_sales
 
-    min_sales[0].split('/')[1]
+    Bot.find min_sales[0].split('/')[1]
   end
 end

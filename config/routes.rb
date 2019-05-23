@@ -25,7 +25,15 @@ Rails.application.routes.draw do
     resources :documents
     resources :phones
     resources :profiles
-    resources :users
+    resources :users do
+      collection do
+        get 'devices_unlogged'
+        get 'devices_table'
+      end
+      member do
+        post 'bind_device'
+      end
+    end
     resources :payments
     resources :positions, only: %i[index]
     post 'auth/signup', to: 'auth#signup'

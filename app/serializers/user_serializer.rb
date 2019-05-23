@@ -18,13 +18,17 @@
 #  type            :string(255)
 #  enabled         :boolean          default(FALSE), not null
 #  secret          :string(255)
+#  payment_type    :string(255)
+#  payment_id      :bigint(8)
+#  device_id       :string(255)
 #
 
 class UserSerializer
   include FastJsonapi::ObjectSerializer
   set_key_transform :camel_lower
   attributes :email, :uid, :state, :level, :domain, :role, :username,
-             :otp, :referral_id, :created_at, :status, :enabled, :secret
+             :otp, :referral_id, :created_at, :status, :enabled, :secret,
+             :payment_type, :device_id, :payment_id
   attribute :jwt, if: proc { |_record, params|
     params[:jwt]
   }
@@ -33,11 +37,7 @@ class UserSerializer
     record.type == 'Bot'
   }
 
-  attribute :alipay_no do |object|
-    object.alipay&.no
-  end
-
-  has_one :alipay
   has_one :profile
-  has_many :payments
+  has_one :payment, polymorphic: true
+  has_many :payments, polymorphic: true
 end

@@ -61,7 +61,7 @@ class V1::ApplicationController < ActionController::API
   end
 
   def attributes
-    params.fetch(:data, {}).fetch(:attributes, {})
+    params.fetch(:data, {}).fetch(:attributes, {}).transform_keys!(&:underscore)
   end
 
   def relationships
@@ -72,7 +72,7 @@ class V1::ApplicationController < ActionController::API
     relationships.fetch(assoc, {}).fetch(:data, {}).fetch(:id)
   end
 
-  def serialize(resource, options = {})
+  def serialize(resource, **options)
     serialize_class = "#{controller_name.classify}Serializer".constantize
     if resource.respond_to? 'each'
       options[:meta] = { total: resource.total_count,

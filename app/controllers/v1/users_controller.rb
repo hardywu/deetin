@@ -2,15 +2,16 @@ class V1::UsersController < V1::ApplicationController
   before_action :set_user, only: %i[show update destroy]
   before_action :set_query, only: %i[index]
   before_action :set_authenticate
+  before_action :preset_user, only: :bind_device
 
   # GET /users
   def index
-    render json: serialize(@users)
+    render json: serialize(@users, include: [:payments])
   end
 
   # GET /users/1
   def show
-    render json: serialize(@user, include: [:alipay])
+    render json: serialize(@user, include: [:payments])
   end
 
   # POST /users
@@ -39,6 +40,23 @@ class V1::UsersController < V1::ApplicationController
     @user.destroy!
   end
 
+  def devices_table
+    render json: SOCKET_SERVER.devices_table
+  end
+
+  def devices_unlogged
+    render json: SOCKET_SERVER.devices_without_app_id
+  end
+
+  def bind_device
+    if @user.update(device_id: @device_id)
+      SOCKET_SERVER.login(@user.device_id, @user.id)
+      render json: { message: 'submit connection request' }
+    else
+      render json: @user.errors, status: :unprocessable_entity
+    end
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -54,6 +72,18 @@ class V1::UsersController < V1::ApplicationController
                          .per(params[:limit])
   end
 
+  def preset_user
+    set_user
+    unless @user.payment_type == 'Unionpayment'
+      raise InvalidParamError, 'Incorrect default payment'
+    end
+    raise InvalidParamError, 'device already associated' if
+      @user.device_id.present?
+
+    @device_id = SOCKET_SERVER.devices_without_app_id[0]
+    raise InvalidParamError, 'no pending device' if @device_id.blank?
+  end
+
   def klass
     params.fetch(:data, {}).fetch(:type, 'member') == 'bot' ? Bot : Member
   end
@@ -64,7 +94,7 @@ class V1::UsersController < V1::ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def user_params
-    attributes.permit(:email, :username, :enabled)
+    attributes.permit %i[email username enabled payment_id payment_type]
   end
 
   def default_params

@@ -31,4 +31,24 @@ class Alipayment < Payment
     rsa_key = OpenSSL::PKey::RSA.new(2048)
     assign_attributes pubkey: rsa_key.public_key.to_pem, secret: rsa_key.to_pem
   end
+
+  def biz_content(funds, subject, trade_no)
+    JSON.generate({ out_trade_no: trade_no,
+                    timeout_express: '10m',
+                    disable_pay_channels: 'credit_group,promotion',
+                    total_amount: funds.round(2).to_s,
+                    subject: subject }, ascii_only: true)
+  end
+
+  def gen_pay_url(funds, subject, trade_no)
+    response = client.execute(
+      method: 'alipay.trade.precreate',
+      notify_url: Config['alipay_notify_url'].value,
+      biz_content: biz_content(funds, subject, trade_no)
+    ).encode('utf-8', 'gbk')
+    res = JSON.parse(response)['alipay_trade_precreate_response']
+    raise StandardError, res.to_s unless res['code'] == '10000'
+
+    res['qr_code']
+  end
 end

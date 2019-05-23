@@ -18,7 +18,7 @@ class V1::QuickTradesController < V1::ApplicationController
   end
 
   def demo
-    @trade = Trade.new ask_member_id: Bot.find_least_sales_id!,
+    @trade = Trade.new ask_member: Bot.find_least_sales!(params['payType']),
                        funds: params[:funds],
                        subject: '体验'
 
@@ -48,7 +48,7 @@ class V1::QuickTradesController < V1::ApplicationController
   def quick_options
     {
       state: 'waiting', price: QUICK_PRICE, market_id: QUICK_MARKET,
-      bid_member: bidder, ask_member_id: Bot.find_least_sales_id!,
+      bid_member: bidder, ask_member: Bot.find_least_sales!(params['payType']),
       volume: params[:funds].to_f / QUICK_PRICE, master: master
     }
   end

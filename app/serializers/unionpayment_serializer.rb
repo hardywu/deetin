@@ -14,14 +14,14 @@
 #  daily_limit   :decimal(32, 2)   default(50000.0)
 #  monthly_limit :decimal(32, 2)   default(1550000.0)
 #  appid         :string(255)
-#  pubkey        :string(255)
-#  secret        :string(255)
+#  pubkey        :text(65535)
+#  secret        :text(65535)
 #
 
-class AlipaySerializer
+class UnionpaymentSerializer
   include FastJsonapi::ObjectSerializer
   set_key_transform :camel_lower
-  attributes :name, :no, :desc, :type, :appid, :pubkey,
+  attributes :name, :no, :desc, :type,
              :limit, :daily_limit, :monthly_limit
   has_one :user
 end

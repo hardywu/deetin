@@ -3,6 +3,9 @@ class V1::MarketsController < V1::ApplicationController
 
   def index
     @markets = Market.enabled
+                     .order(params[:order_by])
+                     .page(params[:page])
+                     .per(params[:limit])
 
     render json: serialize(@markets)
   end

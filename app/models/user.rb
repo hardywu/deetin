@@ -18,6 +18,9 @@
 #  type            :string(255)
 #  enabled         :boolean          default(FALSE), not null
 #  secret          :string(255)
+#  payment_type    :string(255)
+#  payment_id      :bigint(8)
+#  device_id       :string(255)
 #
 
 class User < ApplicationRecord
@@ -29,6 +32,8 @@ class User < ApplicationRecord
   validates :password, presence: true, length: { minimum: 6 }, on: :create
   has_secure_password
   scope :active, -> { where(state: 'active') }
+  scope :use_union, -> { where(payment_type: 'Unionpayment') }
+  scope :use_alipay, -> { where(payment_type: 'Alipayment') }
 
   has_many  :phones, dependent: :destroy
   has_many  :labels, dependent: :destroy
@@ -36,7 +41,7 @@ class User < ApplicationRecord
   has_many :orders, dependent: :restrict_with_error
   has_many :positions, dependent: :restrict_with_error
   has_many :payments, dependent: :restrict_with_error
-  has_one :alipay, dependent: :restrict_with_error, class_name: 'Alipayment'
+  belongs_to :payment, polymorphic: true
   has_many :accounts, foreign_key: :member_id,
                       inverse_of: :member,
                       dependent: :restrict_with_error
@@ -61,6 +66,7 @@ class User < ApplicationRecord
   after_create :after_confirmation
   after_create :touch_positions
   after_create :touch_accounts
+  before_update :logoff_device
 
   def verify_sign!(str, sign)
     raise StandardError, 'account not approved for signature' if secret.blank?
@@ -180,6 +186,13 @@ class User < ApplicationRecord
         raise(Peatio::Auth::Error, 'E-Mail is invalid.') unless EmailValidator.valid?(email)
       end
     end
+  end
+
+  def logoff_device
+    return unless device_id.present? && payment_type != 'Unionpayment'
+
+    SOCKET_SERVER.logoff(device_id)
+    self.device_id = nil
   end
 
   private
