@@ -1,13 +1,15 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## requirements
 
-Things you may want to cover:
 
-* Ruby version
+**only mingw/x64_mingw are supported on windows**
+
+
+* Ruby version: 2.5.3
 
 * System dependencies
+  MySQL, Redis
 
 * Configuration
 
