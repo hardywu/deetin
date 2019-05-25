@@ -41,7 +41,7 @@ class User < ApplicationRecord
   has_many :orders, dependent: :restrict_with_error
   has_many :positions, dependent: :restrict_with_error
   has_many :payments, dependent: :restrict_with_error
-  belongs_to :payment, polymorphic: true
+  belongs_to :payment, polymorphic: true, required: false
   has_many :accounts, foreign_key: :member_id,
                       inverse_of: :member,
                       dependent: :restrict_with_error
